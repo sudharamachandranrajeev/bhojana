@@ -37,6 +37,13 @@ suite. Linux, Windows and Android.
   site-agnostic script in `lib/domain/reader.dart`. The script reads schema.org Product data, or product
   links with a £ price on their tile.
 
+## Sync
+
+Sync is optional and goes to a server you deploy yourself: [`server/`](server/README.md) is a Cloudflare
+Worker (free plan is enough). On a fresh install the setup wizard walks you through it: server address
+or setup link, your account, and the recovery key. Everything is end-to-end encrypted before it leaves the
+device, and nothing about you or your server is in this repository.
+
 ## Privacy
 
 The database is encrypted on the device. Sync is optional, to your own server, end-to-end encrypted.
@@ -49,4 +56,5 @@ flutter pub get
 flutter test                       # reader_test runs the price reader in headless Chromium if installed
 BHOJANA_SHOTS=/tmp/shots FLUTTER_ROOT=... flutter test test/screenshots_test.dart
 flutter build linux --release && scripts/install-linux.sh
+(cd server && npm ci && npm test)  # sync server; sync_worker_test.dart also needs Node 24
 ```

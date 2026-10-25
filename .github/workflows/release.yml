@@ -50,6 +50,9 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - run: flutter analyze
       - run: flutter test
 

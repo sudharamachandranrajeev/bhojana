@@ -25,7 +25,7 @@ class _Root extends StatelessWidget {
   const _Root();
 
   @override
-  Widget build(BuildContext context) => const LinkHandler(child: BhojanaHome());
+  Widget build(BuildContext context) => const LinkHandler(child: FirstRunSetup(child: BhojanaHome()));
 }
 
 /// Bhojana's screens. [onHome] leads back to the Brahma suite's home screen
