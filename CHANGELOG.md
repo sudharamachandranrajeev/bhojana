@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
 
 Multi-buy deals, with your say (Tesco, Asda and Iceland for now).
 
