@@ -1,7 +1,7 @@
 // Deploys your own Bhojana sync server to Cloudflare (free plan is enough):
 //   npx wrangler login     (once, opens the browser)
 //   npm install && npm run setup
-// Creates the database, deploys, stores the signing key as a secret, and
+// Creates the database, builds the web app, deploys, stores the signing key as a secret, and
 // prints the setup link that creates the owner account. Safe to run again:
 // it redeploys and only makes a new setup code while no one has signed up.
 import { execFileSync, spawnSync } from "node:child_process";
@@ -29,6 +29,13 @@ if (toml.includes("REPLACE_WITH_D1_ID")) {
 }
 wrangler(["d1", "execute", "bhojana", "--remote", "--file", "schema.sql"]);
 
+// The Worker also serves the web app, so it is built into ./public first;
+// wrangler refuses to deploy while that folder is missing.
+const npm = (args: string[]) => execFileSync("npm", ["--prefix", "../web", ...args], { cwd: here, stdio: "inherit" });
+npm(["ci"]);
+npm(["run", "build"]);
+console.log("Built the web app.");
+
 const deployed = wrangler(["deploy"]);
 const url = deployed.match(/https:\/\/[\w.-]+\.workers\.dev/)?.[0];
 if (!url) throw new Error(`Deployed, but no workers.dev URL in the output:\n${deployed}`);
@@ -45,6 +52,7 @@ if (health.needsSetup) {
   console.log(`\nOne-time setup code (shown only now): ${code}`);
   console.log(`Setup link for the app:  ${link}`);
   console.log("In Bhojana choose 'Set up sync', paste the link, and create your account.");
+  console.log(`Or open ${url} in a browser and create it there with the code.`);
 } else {
   console.log("Redeployed. Your account already exists; invite people from the app's Settings.");
 }

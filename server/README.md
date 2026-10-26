@@ -1,7 +1,8 @@
 # Bhojana sync server
 
 Your own sync server for Bhojana: a Cloudflare Worker with a D1 database. It keeps your lists in step
-across the Android, Windows and Linux apps. The server stores only ciphertext and wrapped keys, so it
+across the Android, Windows and Linux apps, and serves the web app ([`../web`](../web/README.md)) at the
+same address. The server stores only ciphertext and wrapped keys, so it
 cannot read your lists. The free Cloudflare plan is enough for a household.
 
 ## Deploy
@@ -15,7 +16,8 @@ npx wrangler login      # once; opens the browser
 npm run setup
 ```
 
-`npm run setup` creates the database, deploys the Worker, stores a signing key as a secret and prints:
+`npm run setup` creates the database, builds the web app into `public/`, deploys the Worker with it,
+stores a signing key as a secret and prints:
 
 - the address of your server, like `https://bhojana.<your-subdomain>.workers.dev`;
 - a one-time setup link, `bhojana://setup?s=…&i=…`, shown only once.
@@ -26,7 +28,8 @@ Nothing personal is written to the repository: the database id goes into your lo
 ## Set up the apps
 
 Install Bhojana. On first start the setup wizard asks about sync. Choose **Set up sync**, paste the setup
-link, and create the owner account. Write down the recovery key it shows: with the password it is the only
+link, and create the owner account (or open the server's address in a browser and use the setup code
+there). Write down the recovery key it shows: with the password it is the only
 way to unlock your synced data.
 
 Add more devices from Settings, Sync, **Add a device** (a QR code the new device scans), or sign in with
@@ -44,8 +47,13 @@ need their recovery key.
 ```sh
 npm test            # runs the handler on node:sqlite
 npm run typecheck
+npm run build:web   # the web app into public/ (wrangler needs the folder)
 npm run dev         # wrangler dev, local D1
+npm run deploy      # builds the web app, then wrangler deploy
 ```
+
+`/api/*` always runs the Worker (`run_worker_first` in `wrangler.toml`); every other path is a file from
+`public/`, and unknown paths get `index.html` so the web app's routes survive a reload.
 
 The protocol is in `src/app.ts`; the Dart client is `WorkerApi` in `brahma_core`
 (`core/lib/src/sync/worker_api.dart` in the Brahma repository).

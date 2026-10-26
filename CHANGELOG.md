@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+Bhojana on the web, and a browser extension for live prices.
+
+- Web app (`web/`), served by your own sync server: lists, typed and synced prices, costing per shop,
+  starred shops and postcode, sync status, add a device by QR code, owner tools. Works offline as an
+  installable app. Same end-to-end encryption and account as the native apps.
+- Browser extension (`extension/`, Chrome, Edge and Firefox 128+): the web app's Compare page searches
+  your starred shops through it, in your signed-in browser, and keeps the prices you choose. Attached to
+  this release as a zip.
+- The setup wizard and the web app can pair with each other: a phone can add a browser and the other way round.
+
 ## 0.2.0
 
 Self-hosted sync and a guided setup.
