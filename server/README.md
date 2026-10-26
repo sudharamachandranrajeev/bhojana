@@ -1,5 +1,11 @@
 # Bhojana sync server
 
+> **Moved:** every Brahma app, Bhojana included, now shares one server: the
+> [Brahma sync server](https://github.com/sudharamachandranrajeev/brahma/tree/main/server), which
+> runs at home (one installer) or on Cloudflare's free plan, and which the app's first-run setup
+> walks you through. This copy still works and Bhojana still syncs with servers set up from it, but
+> new fixes land in the Brahma server only, and this folder will go in a later release.
+
 Your own sync server for Bhojana: a Cloudflare Worker with a D1 database. It keeps your lists in step
 across the Android, Windows and Linux apps, and serves the web app ([`../web`](../web/README.md)) at the
 same address. The server stores only ciphertext and wrapped keys, so it
