@@ -27,8 +27,15 @@ class WebSearcher implements PriceSearcher {
   @override
   bool get available => hasWebView;
 
+  /// [keep] is given the settled page before it closes (the live tests save
+  /// it, to replay the reader over it offline). Throws [ShopCheck] when the
+  /// shop shows its bot check instead.
   @override
-  Future<List<Offer>> search(Shop shop, String query) async {
+  Future<List<Offer>> search(
+    Shop shop,
+    String query, {
+    Future<void> Function(InAppWebViewController web)? keep,
+  }) async {
     final loaded = Completer<void>();
     final view = HeadlessInAppWebView(
       initialUrlRequest: URLRequest(url: WebUri(shop.searchUrl(query))),
@@ -53,15 +60,23 @@ class WebSearcher implements PriceSearcher {
       // second or two after the tiles, sometimes redrawing them first).
       var offers = const <Offer>[];
       String? last;
-      var same = 0;
+      var same = 0, checks = 0;
+      final web = view.webViewController!;
       for (var i = 0; i < 14; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 1500));
-        final json = '${await view.webViewController?.evaluateJavascript(source: readerScript)}';
+        final json = '${await web.evaluateJavascript(source: readerScript)}';
         same = json == last ? same + 1 : 0;
         if (same >= 2 && rank(query, offers).isNotEmpty) break;
         last = json;
         offers = parseOffers(shop.id, json);
+        // Twice in a row, in case the check passes by itself and moves on.
+        if (rank(query, offers).isEmpty && await web.evaluateJavascript(source: checkScript) == true) {
+          if (++checks >= 2) throw ShopCheck(shop.name);
+        } else {
+          checks = 0;
+        }
       }
+      await keep?.call(web);
       return offers;
     } finally {
       await view.dispose();

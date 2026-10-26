@@ -69,6 +69,9 @@ Bhojana contacts shop websites only when you search or open one.
 flutter pub get
 flutter test                       # reader_test runs the page scripts in headless Chromium if installed
 flutter test integration_test/live_app_test.dart -d linux   # the whole flow against the real shops
+flutter test integration_test/live_shops_test.dart -d linux --dart-define=SHOPS=asda,iceland
+                                   # reads real shop pages and saves them to test/live_pages (not committed);
+                                   # flutter test then replays the reader over them offline (live_pages_test)
 BHOJANA_SHOTS=/tmp/shots FLUTTER_ROOT=... flutter test test/screenshots_test.dart
 flutter build linux --release && scripts/install-linux.sh
 (cd server && npm ci && npm test)  # sync server; sync_worker_test.dart also needs Node 24

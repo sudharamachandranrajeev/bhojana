@@ -82,6 +82,22 @@ abstract class PriceSearcher {
   Future<List<Offer>> search(Shop shop, String query);
 }
 
+/// A shop showed its "are you a person" check instead of results. Only the
+/// user can answer it, in the in-app browser; searches share its cookies.
+class ShopCheck implements Exception {
+  const ShopCheck(this.shop);
+  final String shop;
+
+  @override
+  String toString() => '$shop asked for a security check';
+}
+
+/// True on a shop's bot-check or access-denied page.
+const checkScript = r'''
+(() => /security checks?|verify (that )?you are (a )?human|are you a robot|captcha|access denied|unusual traffic|pardon our interruption/i
+  .test(document.title + ' ' + (document.body ? document.body.innerText.slice(0, 2000) : '')))()
+''';
+
 /// Turns the reader script's JSON into offers, dropping anything unusable.
 List<Offer> parseOffers(String shop, Object? json) {
   final raw = json is String ? jsonDecode(json) : json;

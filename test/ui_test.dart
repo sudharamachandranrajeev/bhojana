@@ -126,6 +126,29 @@ void main() {
     await app.close();
   });
 
+  testWidgets('a shop that shows its bot check asks the user to answer it', (tester) async {
+    final app = AppHarness(tester)..desktop();
+    await app.open();
+    await app.run(
+      searcher: const FakeSearcher(
+        {
+          'asda': [Offer(shop: 'asda', title: 'Heinz Beans 415g', pence: 130)],
+        },
+        {'tesco'},
+      ),
+    );
+    await app.tapText('New list');
+    await app.tapText('Create');
+    await app.enter('Add an item', 'heinz beans');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await app.settle();
+
+    expect(find.text('Tesco wants to check you are a person'), findsOneWidget);
+    expect(find.text('Open Tesco'), findsOneWidget);
+    expect(find.text('Asda'), findsWidgets);
+    await app.close();
+  });
+
   testWidgets('the postcode is checked and kept', (tester) async {
     final app = AppHarness(tester)..phone();
     await app.open();

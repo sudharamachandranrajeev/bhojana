@@ -4,16 +4,11 @@ import 'dart:io';
 import 'package:bhojana/domain/reader.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'chromium.dart';
+
 /// Runs the reader script in a real headless Chromium over a page shaped
 /// like a supermarket's results. Skipped where Chromium is not installed.
 void main() {
-  final chromium = [
-    'chromium',
-    'chromium-browser',
-    'google-chrome-stable',
-    'google-chrome',
-  ].where((c) => Process.runSync('which', [c]).exitCode == 0).firstOrNull;
-
   test(
     'the reader finds products, prices, unit prices, offers and stock',
     () async {
@@ -157,32 +152,4 @@ document.getElementById('out').textContent = JSON.stringify({r, log});
     timeout: const Timeout(Duration(seconds: 90)),
     skip: chromium == null ? 'Chromium is not installed' : null,
   );
-}
-
-/// Loads [page] in headless Chromium and returns the text its script put in
-/// `<pre id="out">`.
-Future<String> dumpOut(String chromium, Directory dir, File page) async {
-  // A fresh profile and a virtual-time budget keep CI's Chrome from waiting
-  // on first-run work; the timeout stops a browser that hangs anyway.
-  final p = await Process.start(chromium, [
-    '--headless',
-    '--disable-gpu',
-    '--no-sandbox',
-    '--disable-dev-shm-usage',
-    '--no-first-run',
-    '--user-data-dir=${dir.path}/profile',
-    '--virtual-time-budget=5000',
-    '--dump-dom',
-    page.uri.toString(),
-  ]);
-  final stdout = p.stdout.transform(const SystemEncoding().decoder).join();
-  final stderr = p.stderr.transform(const SystemEncoding().decoder).join();
-  await p.exitCode.timeout(const Duration(seconds: 45), onTimeout: () => (p..kill()).pid);
-  final out = RegExp(r'<pre id="out">(.*?)</pre>', dotAll: true).firstMatch(await stdout)?[1];
-  expect(out, isNotNull, reason: await stderr);
-  return out!
-      .replaceAll('&amp;', '&')
-      .replaceAll('&quot;', '"')
-      .replaceAll('&lt;', '<')
-      .replaceAll('&gt;', '>');
 }

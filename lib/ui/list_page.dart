@@ -348,6 +348,10 @@ class _Costs extends ConsumerWidget {
     final verdict = cheapestShop(left, prices, costs, deals: deals);
     final lookups = ref.watch(pricerProvider);
     final searching = lookups.values.where((l) => l == Lookup.searching).length;
+    final checks = {
+      for (final e in lookups.entries)
+        if (e.value == Lookup.checkNeeded) e.key.$2,
+    };
     final available = ref.watch(searcherProvider).available;
     final fillable = [
       for (final s in mine)
@@ -410,6 +414,20 @@ class _Costs extends ConsumerWidget {
                 ],
               ),
             ),
+          // Only the user can answer a shop's bot check; searches share the
+          // browser's cookies, so Check prices works again afterwards.
+          for (final shop in mine)
+            if (checks.contains(shop.id))
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.gpp_maybe_outlined),
+                title: Text('${shop.name} wants to check you are a person'),
+                subtitle: const Text('Open it, answer the check, then Check prices again.'),
+                trailing: TextButton(
+                  onPressed: () => openShop(context, shop, url: shop.searchUrl('milk')),
+                  child: Text('Open ${shop.name}'),
+                ),
+              ),
           for (final c in costs)
             ListTile(
               contentPadding: EdgeInsets.zero,

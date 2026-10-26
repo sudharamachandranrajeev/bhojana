@@ -12,6 +12,10 @@ Multi-buy deals, with your say (Tesco, Asda and Iceland for now).
 - Meal deals, "mix & match from" and "was" prices are no longer read as a product's price.
 - Searches wait until the shop page stops changing, so late deal badges (Iceland) are read, and a load
   cut short by a shop's redirect no longer fails the search.
+- When a shop shows its "are you a person" check instead of results, *Where to shop* says so and opens
+  the shop to answer it, instead of the item looking unsold there.
+- Live shop tests save the pages they read; `flutter test` replays the reader over them offline, so
+  reader changes are checked without loading the shops again.
 
 ## 0.4.0
 
