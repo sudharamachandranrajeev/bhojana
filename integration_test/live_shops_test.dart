@@ -31,4 +31,28 @@ void main() {
     }
     expect(found.values.where((n) => n > 0), isNotEmpty);
   }, timeout: const Timeout(Duration(minutes: 6)));
+
+  testWidgets('multi-buys at Tesco, Asda and Iceland come with the single price', (tester) async {
+    const searcher = WebSearcher();
+    final deals = <String, int>{};
+    for (final id in ['tesco', 'asda', 'iceland']) {
+      for (final q in ['heinz baked beans', 'coca cola', 'pizza']) {
+        final offers = await tester.runAsync(() => searcher.search(shopById(id)!, q));
+        final withDeal = [
+          for (final o in offers!)
+            if (o.multiBuy != null) o,
+        ];
+        deals[id] = (deals[id] ?? 0) + withDeal.length;
+        // ignore: avoid_print
+        print('$id / $q: ${offers.length} products, ${withDeal.length} multi-buys');
+        for (final o in withDeal.take(3)) {
+          final d = o.multiBuy!;
+          // ignore: avoid_print
+          print('  ${o.title}: ${o.pence}p alone; ${d.text} = ${d.each}p each');
+          expect(d.pence, lessThan(d.count * o.pence));
+        }
+      }
+    }
+    expect(deals.values.where((n) => n > 0), hasLength(3));
+  }, timeout: const Timeout(Duration(minutes: 10)));
 }

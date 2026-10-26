@@ -17,6 +17,9 @@ suite. Linux, Windows and Android, plus a web app served by your sync server.
   match at each, in the same pack size everywhere it can (4 pints against 4 pints), and *Where to shop*
   names the cheapest shop for the list and what it saves over the next one. Put a size in the item
   (`milk 4 pints`) to choose it yourself.
+- **Multi-buys, your call.** At Tesco, Asda and Iceland, a deal like *Any 2 for £5* is shown beside the
+  single-purchase price, never instead of it. You choose *Take deal* or *Single price* for each one;
+  that sets the list's cost at the shop and how many go in the basket.
 - **Compare.** Search one product across your starred shops and keep a different product than the one
   Bhojana picked. Your pick replaces its pick for that shop.
 - **Live prices with your login.** Sign in to a shop and set your postcode inside the in-app browser.

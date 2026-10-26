@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+Multi-buy deals, with your say (Tesco, Asda and Iceland for now).
+
+- A price is always the single-purchase price. A multi-buy (*Any 2 for £5*, *10 for £10*, *Buy 2 get 1
+  free*, *3 for 2*) is read separately and shown next to it, never mixed in.
+- The list's *Multi-buy deals* card shows each deal with what one costs alone, what one costs on the
+  deal, and what your quantity costs both ways. *Take deal* or *Single price* decides how the shop is
+  costed and how many *Fill a basket* adds. The choice syncs.
+- Meal deals, "mix & match from" and "was" prices are no longer read as a product's price.
+- Searches wait until the shop page stops changing, so late deal badges (Iceland) are read, and a load
+  cut short by a shop's redirect no longer fails the search.
+
 ## 0.4.0
 
 Lists price themselves, and baskets fill themselves.

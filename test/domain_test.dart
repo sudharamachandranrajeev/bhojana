@@ -91,6 +91,62 @@ void main() {
     );
   });
 
+  test('multi-buys are read at the shops whose deals are checked, and only when cheaper', () {
+    expect(multiBuyAt('tesco', 'Any 2 for £2 Clubcard Price', 140)?.pence, 200);
+    expect(multiBuyAt('tesco', 'Any 2 for £2 Clubcard Price', 140)?.each, 100);
+    expect(multiBuyAt('iceland', 'Buy 2 Get 1 FREE', 250)?.count, 3);
+    expect(multiBuyAt('iceland', 'Buy 2 Get 1 FREE', 250)?.pence, 500);
+    expect(multiBuyAt('asda', '3 for 2', 100)?.pence, 200);
+    expect(multiBuyAt('asda', '2 for 50p', 30)?.pence, 50);
+    // Not a saving, not a deal, or a shop whose deals are not checked yet.
+    expect(multiBuyAt('asda', 'Any 2 for £8', 400), isNull);
+    expect(multiBuyAt('tesco', 'Clubcard Price', 140), isNull);
+    expect(multiBuyAt('aldi', 'Any 2 for £2', 140), isNull);
+    final d = multiBuyAt('iceland', '10 for £10.00', 140)!;
+    expect((d.units(3), d.cost(3)), (10, 1000));
+    expect((d.units(12), d.cost(12)), (20, 2000));
+  });
+
+  test('a taken multi-buy costs the list as whole deals; one not taken costs singly', () async {
+    final store = await Store.open(memoryDatabase());
+    final book = ShoppingBook(store);
+    final list = await book.addList('Weekly', today: '2026-10-26');
+    final beans = await book.addItem(list, 'heinz beans', today: '2026-10-26');
+    await book.keepOffer(
+      const Offer(shop: 'tesco', title: 'Heinz Beans 415g', pence: 140, deal: 'Any 2 for £2 Clubcard Price'),
+      itemId: beans,
+      query: 'heinz beans',
+      source: 'auto',
+    );
+    await book.keepOffer(
+      const Offer(shop: 'asda', title: 'Heinz Beans 415g', pence: 120),
+      itemId: beans,
+      query: 'heinz beans',
+      source: 'auto',
+    );
+    final items = await book.items(list);
+    final prices = await book.prices();
+    final offers = dealOffers(items, prices, await book.dealChoices(), {'tesco', 'asda'});
+    expect(offers.map((o) => (o.price.shop, o.deal.text, o.taken)), [
+      ('tesco', 'Any 2 for £2 Clubcard Price', null),
+    ]);
+    expect(offers.single.price.offer, 'Any 2 for £2 Clubcard Price');
+    // Until the user takes it, Tesco is costed at the single price.
+    expect({for (final c in costByShop(items, prices)) c.shop: c.pence}, {'tesco': 140, 'asda': 120});
+
+    await book.chooseDeal(dealKey(offers.single.price, offers.single.deal), true);
+    final deals = await book.dealChoices();
+    expect(
+      {for (final c in costByShop(items, prices, deals: deals)) c.shop: c.pence},
+      {'tesco': 200, 'asda': 120},
+    );
+    expect(offers.single.price.units(1, deals), 2);
+    expect(dealOffers(items, prices, deals, {'tesco'}).single.taken, isTrue);
+    await book.chooseDeal(dealKey(offers.single.price, offers.single.deal), false);
+    expect(offers.single.price.cost(1, await book.dealChoices()), 140);
+    await store.db.close();
+  });
+
   test('every shop search address carries the query', () {
     for (final s in shops.where((s) => s.searchable)) {
       expect(s.searchUrl('baked beans'), contains('baked%20beans'), reason: s.name);

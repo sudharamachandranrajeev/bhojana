@@ -37,6 +37,9 @@ class WebSearcher implements PriceSearcher {
         if (!loaded.isCompleted) loaded.complete();
       },
       onReceivedError: (_, req, err) {
+        // A load cut short by the shop's own redirect is not a failure; the
+        // page it goes to still ends in onLoadStop.
+        if (err.type == WebResourceErrorType.CANCELLED) return;
         if (req.isForMainFrame != false && !loaded.isCompleted) loaded.completeError(err.description);
       },
     );
@@ -44,11 +47,19 @@ class WebSearcher implements PriceSearcher {
       await view.run();
       await loaded.future.timeout(const Duration(seconds: 30));
       // Most shops draw their results with script after the page loads, so
-      // read a few times until products appear.
+      // read a few times until products for the query appear (Iceland's take
+      // about ten seconds; its menus have prices before that) and the page
+      // stops changing for two reads (Iceland draws its multi-buy badges a
+      // second or two after the tiles, sometimes redrawing them first).
       var offers = const <Offer>[];
-      for (var i = 0; i < 6 && offers.isEmpty; i++) {
+      String? last;
+      var same = 0;
+      for (var i = 0; i < 14; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 1500));
-        final json = await view.webViewController?.evaluateJavascript(source: readerScript);
+        final json = '${await view.webViewController?.evaluateJavascript(source: readerScript)}';
+        same = json == last ? same + 1 : 0;
+        if (same >= 2 && rank(query, offers).isNotEmpty) break;
+        last = json;
         offers = parseOffers(shop.id, json);
       }
       return offers;

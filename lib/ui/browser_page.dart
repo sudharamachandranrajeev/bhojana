@@ -84,13 +84,14 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
       _done.clear();
     });
     final kept = latestPrices(ref.read(pricesProvider).value ?? const []);
+    final deals = ref.read(dealsProvider).value ?? const <String, bool>{};
     for (var i = 0; i < widget.basket.length && !_stop && mounted; i++) {
       setState(() => _step = i);
       final item = _item;
       await _load(shop.searchUrl(item.name));
       // Results are drawn by script after the page loads.
       var offers = const <Offer>[];
-      for (var t = 0; t < 8 && offers.isEmpty && !_stop; t++) {
+      for (var t = 0; t < 10 && rank(item.name, offers).isEmpty && !_stop; t++) {
         await Future<void>.delayed(const Duration(milliseconds: 1500));
         offers = parseOffers(shop.id, await _web?.evaluateJavascript(source: readerScript));
       }
@@ -105,13 +106,15 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
       if (r == 'not-found' && price != null) {
         if (autoPick(item.name, offers) case final other?) r = await _add(other.url, other.title);
       }
-      if (r == 'added' && item.qty > 1) {
+      // A multi-buy the user took means whole deals: 2 of "any 2 for £3".
+      final want = price?.units(item.qty, deals) ?? item.qty;
+      if (r == 'added' && want > 1) {
         var n = 1;
-        for (; n < item.qty; n++) {
+        for (; n < want; n++) {
           await Future<void>.delayed(const Duration(milliseconds: 1500));
           if ('${await _web?.evaluateJavascript(source: moreScript)}' != 'more') break;
         }
-        if (n < item.qty) r = 'added $n';
+        if (n < want) r = 'added $n';
       }
       if (mounted) setState(() => _done[i] = r);
     }

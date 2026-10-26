@@ -170,6 +170,7 @@ class _ItemsState extends ConsumerState<_Items> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Column(children: [for (final i in items) _ItemRow(i, bestPrice(i.id, prices))]),
           ),
+        if (left.isNotEmpty) _Deals(left, prices),
         if (left.isNotEmpty) _Costs(left, prices),
       ],
     );
@@ -205,7 +206,10 @@ class _ItemRow extends ConsumerWidget {
           : Text(
               [
                 '${pounds(best!.pence)} at ${shopName(best!.shop)}',
-                if (best!.offer.isNotEmpty) best!.offer,
+                if (best!.multiBuy case final d?)
+                  'multi-buy ${d.text}'
+                else if (best!.offer.isNotEmpty)
+                  best!.offer,
                 if (best!.source == 'auto') best!.title,
                 if (searching > 0) 'searching $searching more',
               ].join(' · '),
@@ -260,6 +264,71 @@ Future<void> _editItem(BuildContext context, WidgetRef ref, Item item) async {
   );
 }
 
+/// Multi-buy deals found for the list. Bhojana compares single prices until
+/// the user takes a deal; then that item is costed, and its basket filled,
+/// as whole deals.
+class _Deals extends ConsumerWidget {
+  const _Deals(this.left, this.prices);
+  final List<Item> left;
+  final List<Price> prices;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mine = {for (final s in ref.watch(myShopsProvider).value ?? const <Shop>[]) s.id};
+    final deals = ref.watch(dealsProvider).value ?? const <String, bool>{};
+    final offers = dealOffers(left, prices, deals, mine);
+    if (offers.isEmpty) return const SizedBox.shrink();
+    final open = offers.where((o) => o.taken == null).length;
+    final text = Theme.of(context).textTheme;
+    return SectionCard(
+      title: open > 0 ? 'Multi-buy deals: $open to decide' : 'Multi-buy deals',
+      hint: 'action.deals',
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          for (final o in offers)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${o.item.name} at ${shopName(o.price.shop)}', style: text.titleSmall),
+                  Text(
+                    o.price.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: muted(context)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Single purchase: ${pounds(o.price.pence)} each'),
+                  Text(
+                    'Multi-buy deal: ${o.deal.text} (${pounds(o.deal.each)} each). For your '
+                    '${o.item.qty}, buy ${o.deal.units(o.item.qty)} for ${pounds(o.deal.cost(o.item.qty))}'
+                    ' instead of ${pounds(o.price.pence * o.item.qty)}.',
+                    style: const TextStyle(color: tomato),
+                  ),
+                  const SizedBox(height: 6),
+                  SegmentedButton<bool>(
+                    emptySelectionAllowed: true,
+                    segments: const [
+                      ButtonSegment(value: true, label: Text('Take deal')),
+                      ButtonSegment(value: false, label: Text('Single price')),
+                    ],
+                    selected: {?o.taken},
+                    onSelectionChanged: (v) {
+                      if (v.isEmpty) return;
+                      ref.mutate((s) => s.book.chooseDeal(dealKey(o.price, o.deal), v.first));
+                    },
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// What the rest of the list costs at each compared shop, which one is
 /// cheapest, and the way to fill its basket.
 class _Costs extends ConsumerWidget {
@@ -270,12 +339,13 @@ class _Costs extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mine = ref.watch(myShopsProvider).value ?? const <Shop>[];
+    final deals = ref.watch(dealsProvider).value ?? const <String, bool>{};
     final ids = {for (final s in mine) s.id};
     final costs = [
-      for (final c in costByShop(left, prices))
+      for (final c in costByShop(left, prices, deals: deals))
         if (ids.contains(c.shop)) c,
     ];
-    final verdict = cheapestShop(left, prices, costs);
+    final verdict = cheapestShop(left, prices, costs, deals: deals);
     final lookups = ref.watch(pricerProvider);
     final searching = lookups.values.where((l) => l == Lookup.searching).length;
     final available = ref.watch(searcherProvider).available;

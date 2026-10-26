@@ -219,7 +219,12 @@ class _ShopResults extends StatelessWidget {
             ListTile(
               title: Text(o.title, maxLines: 2, overflow: TextOverflow.ellipsis),
               subtitle: Text(
-                [o.unitPrice, o.offer, if (!o.inStock) 'Out of stock'].where((s) => s.isNotEmpty).join(' · '),
+                [
+                  o.unitPrice,
+                  o.offer,
+                  if (o.multiBuy case final d?) 'Multi-buy: ${d.text} (${pounds(d.each)} each)',
+                  if (!o.inStock) 'Out of stock',
+                ].where((s) => s.isNotEmpty).join(' · '),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

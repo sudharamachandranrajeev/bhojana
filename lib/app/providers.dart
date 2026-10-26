@@ -89,3 +89,9 @@ final myShopsProvider = FutureProvider<List<Shop>>((ref) async {
       if (ids.contains(s.id)) s,
   ];
 });
+
+/// The user's answers to multi-buy deals (ShoppingBook.dealChoices).
+final dealsProvider = FutureProvider<Map<String, bool>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(sessionProvider).book.dealChoices();
+});
