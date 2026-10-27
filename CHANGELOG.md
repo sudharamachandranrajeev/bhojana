@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Group by aisle: the button on the list sorts it into aisles in the order a shop is walked (fruit and
+  veg, bakery, meat, fish, dairy, frozen, cupboard and so on), each with how many are left.
+- Add again: things you have bought before, and are not on the list now, sit above it as one-tap chips.
+
 ## 0.7.0
 
 - Asda (and any shop behind Cloudflare's "Just a moment…" check) no longer fails to load. The check

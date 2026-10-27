@@ -258,6 +258,25 @@ const _words = <(Aisle, List<String>)>[
   ),
 ];
 
+/// Aisles in the order a shop is usually walked: produce and the chilled
+/// counters first, then the cupboards, and the non-food last.
+const walkOrder = [
+  Aisle.fruitVeg,
+  Aisle.bakery,
+  Aisle.meat,
+  Aisle.fish,
+  Aisle.dairy,
+  Aisle.frozen,
+  Aisle.cupboard,
+  Aisle.snacks,
+  Aisle.drinks,
+  Aisle.household,
+  Aisle.toiletries,
+  Aisle.baby,
+  Aisle.pets,
+  Aisle.other,
+];
+
 /// The aisle [name] is most likely in, or [Aisle.other].
 Aisle aisleOf(String name) {
   final n = ' ${name.toLowerCase()}';

@@ -220,6 +220,26 @@ void main() {
     await store.db.close();
   });
 
+  test('the shop is walked through every aisle once', () {
+    expect({...walkOrder}, {...Aisle.values});
+    expect(walkOrder, hasLength(Aisle.values.length));
+  });
+
+  test('items bought before come back once, newest first, unless already on the list', () async {
+    final store = await Store.open(memoryDatabase());
+    final book = ShoppingBook(store);
+    final old = await book.addList('Old', today: '2026-10-01');
+    await book.addItem(old, 'eggs', today: '2026-10-01');
+    await book.addItem(old, 'tea', today: '2026-10-02');
+    final now = await book.addList('Now', today: '2026-10-20');
+    await book.addItem(now, 'Eggs', today: '2026-10-20');
+    await book.addItem(now, 'rice', today: '2026-10-21');
+    await book.removeItem((await book.items(now)).firstWhere((i) => i.name == 'rice').id);
+    expect(await book.usualItems({'Eggs'}), ['rice', 'tea']);
+    expect(await book.usualItems({'Eggs'}, limit: 1), ['rice']);
+    await store.db.close();
+  });
+
   test('a pick kept today replaces the one kept earlier today at the same shop', () async {
     final store = await Store.open(memoryDatabase());
     final book = ShoppingBook(store);

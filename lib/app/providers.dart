@@ -90,6 +90,21 @@ final myShopsProvider = FutureProvider<List<Shop>>((ref) async {
   ];
 });
 
+/// Whether the list is shown by aisle, a synced pref.
+const groupPref = 'bhojana.group';
+
+final groupedProvider = FutureProvider<bool>((ref) async {
+  ref.watch(revisionProvider);
+  return await ref.watch(sessionProvider).book.pref(groupPref) == '1';
+});
+
+/// What the user has bought before and has not on the list now.
+final usualProvider = FutureProvider<List<String>>((ref) async {
+  ref.watch(revisionProvider);
+  final items = await ref.watch(itemsProvider.future);
+  return ref.watch(sessionProvider).book.usualItems({for (final i in items) i.name});
+});
+
 /// The items whose price the user watches (ShoppingBook.watched).
 final watchedProvider = FutureProvider<Set<String>>((ref) {
   ref.watch(revisionProvider);
