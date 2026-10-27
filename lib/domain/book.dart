@@ -159,6 +159,14 @@ class ShoppingBook {
   Future<void> chooseDeal(String key, bool take) async =>
       setPref(dealsPref, jsonEncode({...await dealChoices(), key: take}));
 
+  // ---- budget ----
+
+  /// The list's budget in pence, or null when it has none.
+  Future<int?> budget(String listId) async => int.tryParse(await pref('$budgetPref.$listId') ?? '');
+
+  /// Sets the list's budget; null clears it.
+  Future<void> setBudget(String listId, int? pence) => setPref('$budgetPref.$listId', '${pence ?? ''}');
+
   // ---- re-adding ----
 
   /// Names the user has bought before and has not on [onList]: the latest
@@ -188,6 +196,9 @@ class ShoppingBook {
     await setPref(watchPref, (on ? (ids..add(itemId)) : (ids..remove(itemId))).join(','));
   }
 }
+
+/// The synced pref, per list, holding [ShoppingBook.budget].
+const budgetPref = 'bhojana.budget';
 
 /// The synced pref holding [ShoppingBook.watched].
 const watchPref = 'bhojana.watch';
@@ -369,6 +380,25 @@ List<PriceDrop> priceDrops(List<Item> items, List<Price> prices, Set<String> wat
   }
   out.sort((a, b) => (b.was.pence - b.now.pence).compareTo(a.was.pence - a.now.pence));
   return out;
+}
+
+/// What a list comes to at each item's best price: the items in the basket,
+/// the whole list, and how many items have no price yet (left out of both).
+typedef Spend = ({int basket, int list, int unpriced});
+
+Spend spend(List<Item> items, List<Price> prices, {Map<String, bool> deals = const {}}) {
+  var basket = 0, list = 0, unpriced = 0;
+  for (final i in items) {
+    final p = bestPrice(i.id, prices);
+    if (p == null) {
+      unpriced++;
+      continue;
+    }
+    final c = p.cost(i.qty, deals);
+    list += c;
+    if (i.done) basket += c;
+  }
+  return (basket: basket, list: list, unpriced: unpriced);
 }
 
 /// Pence as "£1.25" or "85p".

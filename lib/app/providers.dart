@@ -90,6 +90,13 @@ final myShopsProvider = FutureProvider<List<Shop>>((ref) async {
   ];
 });
 
+/// The current list's budget in pence, or null.
+final budgetProvider = FutureProvider<int?>((ref) async {
+  ref.watch(revisionProvider);
+  final list = await ref.watch(currentListProvider.future);
+  return list == null ? null : ref.watch(sessionProvider).book.budget(list.id);
+});
+
 /// Whether the list is shown by aisle, a synced pref.
 const groupPref = 'bhojana.group';
 

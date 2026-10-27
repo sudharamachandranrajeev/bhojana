@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Running total and budget: the list shows what is in the basket and what the whole list comes to at
+  each item's best price. Set a budget for a list to see the basket fill against it, what is left to
+  spare, and a warning when the list or the basket goes over.
+
 ## 0.8.0
 
 - Group by aisle: the button on the list sorts it into aisles in the order a shop is walked (fruit and

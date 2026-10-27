@@ -240,6 +240,27 @@ void main() {
     await store.db.close();
   });
 
+  test('the running total counts the basket and the list at best prices, and a budget is kept', () async {
+    final store = await Store.open(memoryDatabase());
+    final book = ShoppingBook(store);
+    await seedBook(book);
+    final listId = (await book.db.select(book.db.foodLists).get()).single.id;
+    final items = await book.items(listId);
+    // 2 milk at Aldi's £1.39 and bread at £1.40; bananas and the ticked
+    // washing-up liquid have no price.
+    expect(spend(items, await book.prices()), (basket: 0, list: 418, unpriced: 2));
+    final bread = items.firstWhere((i) => i.name == 'wholemeal bread');
+    await book.tick(bread, true);
+    expect(spend(await book.items(listId), await book.prices()).basket, 140);
+
+    expect(await book.budget(listId), isNull);
+    await book.setBudget(listId, 6000);
+    expect(await book.budget(listId), 6000);
+    await book.setBudget(listId, null);
+    expect(await book.budget(listId), isNull);
+    await store.db.close();
+  });
+
   test('a pick kept today replaces the one kept earlier today at the same shop', () async {
     final store = await Store.open(memoryDatabase());
     final book = ShoppingBook(store);

@@ -159,6 +159,7 @@ class _ItemsState extends ConsumerState<_Items> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _Overview(items, left, prices),
+        if (items.isNotEmpty) _Budget(items, prices),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: TextField(
@@ -419,6 +420,87 @@ class _ItemRow extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The running total: what is in the basket and what the whole list comes
+/// to at each item's best price, against the list's budget when it has one.
+class _Budget extends ConsumerWidget {
+  const _Budget(this.items, this.prices);
+  final List<Item> items;
+  final List<Price> prices;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final budget = ref.watch(budgetProvider).value;
+    final deals = ref.watch(dealsProvider).value ?? const <String, bool>{};
+    final s = spend(items, prices, deals: deals);
+    final text = Theme.of(context).textTheme;
+    final over = budget != null && s.list > budget;
+    final basketOver = budget != null && s.basket > budget;
+    return SectionCard(
+      title: budget == null ? 'Running total' : 'Budget ${pounds(budget)}',
+      trailing: TextButton(
+        onPressed: () => _setBudget(context, ref, budget),
+        child: Text(budget == null ? 'Set a budget' : 'Change'),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('${pounds(s.basket)} in the basket', style: text.titleMedium),
+          if (budget != null) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                minHeight: 12,
+                value: (s.basket / budget).clamp(0.0, 1.0),
+                color: basketOver ? Theme.of(context).colorScheme.error : null,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            [
+              'The whole list comes to about ${pounds(s.list)} at the best prices',
+              if (s.unpriced > 0) ', with ${s.unpriced} ${s.unpriced == 1 ? 'item' : 'items'} not priced yet',
+              '.',
+              if (budget != null && !over) ' ${pounds(budget - s.list)} to spare.',
+            ].join(),
+            style: TextStyle(color: muted(context)),
+          ),
+          if (over)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                basketOver
+                    ? 'The basket is ${pounds(s.basket - budget)} over budget.'
+                    : 'The list is ${pounds(s.list - budget)} over budget.',
+                style: text.titleSmall?.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _setBudget(BuildContext context, WidgetRef ref, int? now) async {
+  final list = ref.read(currentListProvider).value;
+  if (list == null) return;
+  final amount = TextEditingController(text: now == null ? '' : (now / 100).toStringAsFixed(2));
+  await showFormDialog(
+    context,
+    title: 'Budget for ${list.name}',
+    fields: (_) => [
+      Field(amount, 'Budget in £', number: true, hint: '60, or empty for none', autofocus: true),
+    ],
+    onSave: () async {
+      final n = numberIn(amount);
+      if (amount.text.trim().isNotEmpty && (n == null || n <= 0)) return 'Type an amount, like 60.';
+      await ref.mutate((s) => s.book.setBudget(list.id, n == null ? null : (n * 100).round()));
+      return null;
+    },
+  );
 }
 
 /// Watched items whose best price has fallen since they were last priced.
