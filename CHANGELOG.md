@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
 
 - A new look: warm cream and pastel clay cards with soft shadows, a sage-green rail and bar, and coral
   for prices.
