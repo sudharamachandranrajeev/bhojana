@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
 
 - Asda (and any shop behind Cloudflare's "Just a moment…" check) no longer fails to load. The check
   comes with an error status, which the Windows web view treated as a failed page: searches now read
@@ -17,6 +17,7 @@
 - A fuller new look: the rounded Nunito typeface, rounded icons, a floating sage rail with a card to
   search every shop again, coral for the main action, and what the list costs at each shop drawn as
   pastel bars.
+
 ## 0.6.0
 
 - A new look: warm cream and pastel clay cards with soft shadows, a sage-green rail and bar, and coral
