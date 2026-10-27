@@ -211,6 +211,27 @@ void main() {
     await app.close();
   });
 
+  testWidgets('a budget is set for the list and the running total kept against it', (tester) async {
+    final app = AppHarness(tester)..phone();
+    await app.open(seed: seedBook);
+    await app.run();
+    expect(find.text('Running total'), findsOneWidget);
+    expect(find.text('0p in the basket'), findsOneWidget);
+    await app.tapText('Set a budget');
+    await app.enter('Budget in £', '4');
+    await app.tapText('Save');
+    expect(find.text('Budget £4.00'), findsOneWidget);
+    expect(find.text('The list is 18p over budget.'), findsOneWidget);
+
+    await app.tap(find.byType(Checkbox).at(1));
+    expect(find.text('£1.40 in the basket'), findsOneWidget);
+    await app.tapText('Change');
+    await app.enter('Budget in £', '');
+    await app.tapText('Save');
+    expect(find.text('Running total'), findsOneWidget);
+    await app.close();
+  });
+
   testWidgets('the postcode is checked and kept', (tester) async {
     final app = AppHarness(tester)..phone();
     await app.open();
