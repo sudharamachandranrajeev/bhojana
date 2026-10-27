@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0
 
 - Group by aisle: the button on the list sorts it into aisles in the order a shop is walked (fruit and
   veg, bakery, meat, fish, dairy, frozen, cupboard and so on), each with how many are left.
