@@ -149,6 +149,32 @@ void main() {
     await app.close();
   });
 
+  testWidgets('an item has its own page, and a search result can be added as one', (tester) async {
+    final app = AppHarness(tester)..phone();
+    await app.open(seed: seedBook);
+    await app.run(
+      searcher: const FakeSearcher({
+        'aldi': [Offer(shop: 'aldi', title: 'Lurpak Spreadable Butter 500g', pence: 450)],
+      }),
+    );
+    await app.tapText('2 × semi-skimmed milk');
+    expect(find.text('Dairy & eggs'), findsOneWidget);
+    expect(find.text('Best, Aldi'), findsOneWidget);
+    expect(find.text('Cowbelle Semi Skimmed Milk 4 Pints'), findsOneWidget);
+    await app.tap(find.byTooltip('One more'));
+    await app.tap(find.byType(BackButton));
+    expect(find.text('3 × semi-skimmed milk'), findsOneWidget);
+
+    await app.go('Compare');
+    await app.enter('Product', 'butter');
+    await app.tap(find.textContaining('Search 6 shops'));
+    await app.tap(find.byTooltip('Add to list'));
+    expect(find.text('Lurpak Spreadable Butter 500g'), findsOneWidget);
+    expect(find.text('Dairy & eggs'), findsOneWidget);
+    expect(find.text('Best, Aldi'), findsOneWidget);
+    await app.close();
+  });
+
   testWidgets('the postcode is checked and kept', (tester) async {
     final app = AppHarness(tester)..phone();
     await app.open();

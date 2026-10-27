@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Every item has its own page: tap it on the list. It shows the aisle, how many, whether it is in the
+  basket, the price at each shop as bars, the best and lowest prices seen, and a chart of how the
+  price has moved. Compare, edit or delete it from there.
+- Compare can add a search result straight to the list, with its price, and opens the new item.
+- Items are drawn with an icon for their aisle (fruit and veg, dairy, bakery, household and more),
+  guessed from the name.
+- A fuller new look: the rounded Nunito typeface, rounded icons, a floating sage rail with a card to
+  search every shop again, coral for the main action, and what the list costs at each shop drawn as
+  pastel bars.
 ## 0.6.0
 
 - A new look: warm cream and pastel clay cards with soft shadows, a sage-green rail and bar, and coral

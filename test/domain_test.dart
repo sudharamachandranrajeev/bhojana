@@ -1,3 +1,4 @@
+import 'package:bhojana/domain/aisles.dart';
 import 'package:bhojana/domain/book.dart';
 import 'package:bhojana/domain/reader.dart';
 import 'package:bhojana/domain/shops.dart';
@@ -260,5 +261,19 @@ void main() {
     expect(pounds(85), '85p');
     expect(pounds(100), '£1.00');
     expect(pounds(1250), '£12.50');
+  });
+
+  test('items are placed in their aisle, with tricky names caught first', () {
+    expect(aisleOf('2 semi-skimmed milk'), Aisle.dairy);
+    expect(aisleOf('wholemeal bread'), Aisle.bakery);
+    expect(aisleOf('bananas'), Aisle.fruitVeg);
+    expect(aisleOf('washing-up liquid'), Aisle.household);
+    expect(aisleOf('peanut butter'), Aisle.cupboard);
+    expect(aisleOf('ice cream'), Aisle.frozen);
+    expect(aisleOf('frozen peas'), Aisle.frozen);
+    expect(aisleOf('watermelon'), Aisle.fruitVeg);
+    expect(aisleOf('dog food'), Aisle.pets);
+    expect(aisleOf('teacakes'), Aisle.bakery);
+    expect(aisleOf('a gift'), Aisle.other);
   });
 }

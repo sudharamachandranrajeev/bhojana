@@ -1,9 +1,13 @@
 import 'package:brahma_core/brahma_core.dart';
 import 'package:flutter/material.dart';
 
-// Bhojana's look: a sunny kitchen. Warm cream and cocoa ink, soft clay cards
-// that float on gentle shadows, pastel tiles (sage, peach, butter, sky), a
-// sage-green rail and coral for prices and offers.
+import '../domain/aisles.dart';
+import '../domain/shops.dart';
+
+// Bhojana's look: a sunny kitchen in soft clay. Warm cream and cocoa ink,
+// rounded Nunito, cards that float on gentle shadows, pastel tiles (sage,
+// peach, butter, sky, lilac) with glossy icon chips, a floating sage-green
+// rail and coral for prices, offers and the main call to action.
 
 const leaf = Color(0xFF3F7A5E);
 const tomato = Color(0xFFC4532E);
@@ -15,9 +19,14 @@ const sage = (Color(0xFFD5E6DA), Color(0xFF6FA585));
 const peach = (Color(0xFFFADCCB), Color(0xFFEA8A66));
 const butter = (Color(0xFFFBE7B5), Color(0xFFDDAA3A));
 const sky = (Color(0xFFD3E2EE), Color(0xFF6F9BC0));
+const lilac = (Color(0xFFE6DCEE), Color(0xFFA088C0));
 
-const headingFont = 'PlusJakartaSans';
-const bodyFont = 'Inter';
+/// Every tone, for things coloured in turn (shops, chart bars).
+const tones = [sage, peach, butter, sky, lilac];
+
+/// Nunito throughout: rounded, friendly, and clear at small sizes.
+const headingFont = 'Nunito';
+const bodyFont = 'Nunito';
 
 bool isDark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
 
@@ -25,6 +34,9 @@ bool isDark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
 Color hairline(BuildContext c) => isDark(c) ? Colors.white10 : const Color(0xFFEFE3D2);
 Color softFill(BuildContext c) => isDark(c) ? const Color(0xFF332A23) : const Color(0xFFF6EBDC);
 Color muted(BuildContext c) => Theme.of(c).colorScheme.onSurfaceVariant;
+
+/// Coral for prices and offers, lighter at night so it reads on cocoa.
+Color priceInk(BuildContext c) => Theme.of(c).colorScheme.tertiary;
 
 /// A pastel tile's fill: the pastel itself by day, a glaze of it by night.
 Color tileFill(BuildContext c, (Color, Color) tone) =>
@@ -63,13 +75,15 @@ ThemeData bhojanaTheme(Brightness b) {
   TextStyle? heading(TextStyle? s, FontWeight w, [double spacing = -0.3]) =>
       s?.copyWith(fontFamily: headingFont, fontWeight: w, letterSpacing: spacing);
   final type = text.copyWith(
-    displaySmall: heading(text.displaySmall, FontWeight.w800, -0.8),
-    headlineMedium: heading(text.headlineMedium, FontWeight.w800, -0.6),
-    headlineSmall: heading(text.headlineSmall, FontWeight.w700),
-    titleLarge: heading(text.titleLarge, FontWeight.w700),
-    titleMedium: heading(text.titleMedium, FontWeight.w700, -0.1),
-    bodyLarge: text.bodyLarge?.copyWith(height: 1.55),
-    bodyMedium: text.bodyMedium?.copyWith(height: 1.5),
+    displaySmall: heading(text.displaySmall, FontWeight.w900, -0.6),
+    headlineMedium: heading(text.headlineMedium, FontWeight.w900, -0.4),
+    headlineSmall: heading(text.headlineSmall, FontWeight.w800, -0.2),
+    titleLarge: heading(text.titleLarge, FontWeight.w800, -0.1),
+    titleMedium: heading(text.titleMedium, FontWeight.w800, 0),
+    titleSmall: heading(text.titleSmall, FontWeight.w700, 0),
+    labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+    bodyLarge: text.bodyLarge?.copyWith(height: 1.5, fontWeight: FontWeight.w500),
+    bodyMedium: text.bodyMedium?.copyWith(height: 1.45, fontWeight: FontWeight.w500),
   );
   const stadium = StadiumBorder();
   final line = dark ? Colors.white10 : const Color(0xFFEFE3D2);
@@ -123,7 +137,7 @@ ThemeData bhojanaTheme(Brightness b) {
         shape: stadium,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        textStyle: type.labelLarge?.copyWith(fontSize: 15, fontWeight: FontWeight.w600),
+        textStyle: type.labelLarge?.copyWith(fontSize: 15, fontWeight: FontWeight.w800),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -335,5 +349,63 @@ class ClayIcon extends StatelessWidget {
       ],
     ),
     child: Icon(icon, color: Colors.white, size: size * 0.55),
+  );
+}
+
+/// The icon and tone an aisle is drawn with.
+(IconData, (Color, Color)) aisleLook(Aisle a) => switch (a) {
+  Aisle.fruitVeg => (Icons.eco_rounded, sage),
+  Aisle.bakery => (Icons.bakery_dining_rounded, butter),
+  Aisle.dairy => (Icons.water_drop_rounded, sky),
+  Aisle.meat => (Icons.kebab_dining_rounded, peach),
+  Aisle.fish => (Icons.set_meal_rounded, sky),
+  Aisle.frozen => (Icons.ac_unit_rounded, sky),
+  Aisle.cupboard => (Icons.rice_bowl_rounded, butter),
+  Aisle.snacks => (Icons.cookie_rounded, peach),
+  Aisle.drinks => (Icons.local_cafe_rounded, lilac),
+  Aisle.household => (Icons.cleaning_services_rounded, lilac),
+  Aisle.toiletries => (Icons.soap_rounded, lilac),
+  Aisle.baby => (Icons.child_friendly_rounded, peach),
+  Aisle.pets => (Icons.pets_rounded, butter),
+  Aisle.other => (Icons.shopping_bag_rounded, sage),
+};
+
+/// A shop's tone, from its place in the catalogue so neighbours differ.
+(Color, Color) shopTone(String shopId) =>
+    tones[shops.indexWhere((s) => s.id == shopId).clamp(0, 99) % tones.length];
+
+/// The coral filled button for a screen's main call to action.
+ButtonStyle coralButton(BuildContext c) => FilledButton.styleFrom(
+  backgroundColor: isDark(c) ? const Color(0xFFE88A66) : const Color(0xFFE5704B),
+  foregroundColor: Colors.white,
+  elevation: 2,
+  shadowColor: const Color(0xFFE5704B).withValues(alpha: 0.5),
+);
+
+/// A round, raised button with a single icon (the reference's play button).
+class RoundIconButton extends StatelessWidget {
+  const RoundIconButton({super.key, required this.icon, required this.tooltip, this.onPressed, this.color});
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: Material(
+      color: Theme.of(context).colorScheme.surface,
+      shape: const CircleBorder(),
+      elevation: 2,
+      shadowColor: const Color(0xFF8A6A4A).withValues(alpha: 0.4),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, size: 20, color: color ?? Theme.of(context).colorScheme.primary),
+        ),
+      ),
+    ),
   );
 }
