@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Asda (and any shop behind Cloudflare's "Just a moment…" check) no longer fails to load. The check
+  comes with an error status, which the Windows web view treated as a failed page: searches now read
+  it as a bot check and ask you to answer it, and the in-app browser shows it. If a page really does
+  not load, the browser says so, with Try again and Open in your browser, which is also in its toolbar.
 - Every item has its own page: tap it on the list. It shows the aisle, how many, whether it is in the
   basket, the price at each shop as bars, the best and lowest prices seen, and a chart of how the
   price has moved. Compare, edit or delete it from there.

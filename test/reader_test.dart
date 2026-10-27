@@ -152,4 +152,24 @@ document.getElementById('out').textContent = JSON.stringify({r, log});
     timeout: const Timeout(Duration(seconds: 90)),
     skip: chromium == null ? 'Chromium is not installed' : null,
   );
+
+  test(
+    "Cloudflare's challenge page counts as a bot check",
+    () async {
+      final dir = await Directory.systemTemp.createTemp('bhojana_check');
+      addTearDown(() => dir.delete(recursive: true));
+      final page = File('${dir.path}/page.html');
+      // As Asda served it in October 2026, with a 403.
+      await page.writeAsString('''
+<html><head><title>Just a moment...</title></head><body>
+<h1>www.asda.com</h1><p>Verifying you are human. This may take a few seconds.</p>
+<p>www.asda.com needs to review the security of your connection before proceeding.</p>
+<pre id="out"></pre>
+<script>document.getElementById('out').textContent = String($checkScript);</script>
+</body></html>''');
+      expect(await dumpOut(chromium!, dir, page), 'true');
+    },
+    timeout: const Timeout(Duration(seconds: 90)),
+    skip: chromium == null ? 'Chromium is not installed' : null,
+  );
 }

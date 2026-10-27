@@ -54,6 +54,12 @@ class WebSearcher implements PriceSearcher {
       onLoadStop: (_, _) {
         if (!loaded.isCompleted) loaded.complete();
       },
+      // A bot check (Cloudflare's "Just a moment…") comes with a 403. The
+      // Windows web view reports any status of 400 or more here instead of
+      // in onLoadStop, but the page is there to read and to check.
+      onReceivedHttpError: (_, req, _) {
+        if (req.isForMainFrame != false && !loaded.isCompleted) loaded.complete();
+      },
       onReceivedError: (_, req, err) {
         // A load cut short by the shop's own redirect is not a failure; the
         // page it goes to still ends in onLoadStop.
