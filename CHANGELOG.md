@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+- Windows: searching shops for list items no longer closes the app. A shop page calling the web view's
+  script bridge crashed the Windows web view plugin; Bhojana does not use the bridge, so it is now off.
+
 ## 0.5.0
 
 Multi-buy deals, with your say (Tesco, Asda and Iceland for now).
