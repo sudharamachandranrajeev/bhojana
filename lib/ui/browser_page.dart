@@ -207,7 +207,7 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
       ),
       body: InAppWebView(
         initialUrlRequest: URLRequest(url: WebUri(_start)),
-        initialSettings: InAppWebViewSettings(javaScriptEnabled: true, supportMultipleWindows: false),
+        initialSettings: webSettings(supportMultipleWindows: false),
         onWebViewCreated: (c) => _web = c,
         onLoadStop: (_, _) {
           if (_loaded?.isCompleted == false) _loaded!.complete();
