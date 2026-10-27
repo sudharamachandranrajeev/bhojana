@@ -42,6 +42,9 @@ class BrowserPage extends ConsumerStatefulWidget {
 class _BrowserPageState extends ConsumerState<BrowserPage> {
   InAppWebViewController? _web;
   var _progress = 0.0;
+
+  /// Why the page in view did not load, shown over it with ways on.
+  String? _failed;
   var _step = 0;
   Completer<void>? _loaded;
 
@@ -197,6 +200,11 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
             onPressed: _readPrices,
           ),
           IconButton(
+            tooltip: 'Open in your browser',
+            icon: const Icon(Icons.open_in_browser_rounded),
+            onPressed: _openOutside,
+          ),
+          IconButton(
             tooltip: 'Reload',
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => _web?.reload(),
@@ -209,17 +217,64 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
               )
             : null,
       ),
-      body: InAppWebView(
-        initialUrlRequest: URLRequest(url: WebUri(_start)),
-        initialSettings: webSettings(supportMultipleWindows: false),
-        onWebViewCreated: (c) => _web = c,
-        onLoadStop: (_, _) {
-          if (_loaded?.isCompleted == false) _loaded!.complete();
-        },
-        onProgressChanged: (_, p) => setState(() => _progress = p / 100),
+      body: Stack(
+        children: [
+          InAppWebView(
+            initialUrlRequest: URLRequest(url: WebUri(_start)),
+            initialSettings: webSettings(supportMultipleWindows: false),
+            onWebViewCreated: (c) => _web = c,
+            onLoadStart: (_, _) {
+              if (_failed != null) setState(() => _failed = null);
+            },
+            onLoadStop: (_, _) {
+              if (_loaded?.isCompleted == false) _loaded!.complete();
+            },
+            // A shop's bot check comes with a 403, which the Windows web view
+            // reports here rather than in onLoadStop; the page still shows.
+            onReceivedHttpError: (_, req, _) {
+              if (req.isForMainFrame != false && _loaded?.isCompleted == false) _loaded!.complete();
+            },
+            onReceivedError: (_, req, err) {
+              if (req.isForMainFrame == false || err.type == WebResourceErrorType.CANCELLED) return;
+              if (_loaded?.isCompleted == false) _loaded!.complete();
+              setState(() => _failed = err.description);
+            },
+            onProgressChanged: (_, p) => setState(() => _progress = p / 100),
+          ),
+          if (_failed case final why?)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Theme.of(context).colorScheme.surface,
+                child: EmptyState(
+                  icon: Icons.cloud_off_rounded,
+                  title: '${shop.name} did not load',
+                  message: '$why. Try again, or open it in your browser.',
+                  actions: [
+                    FilledButton.icon(
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try again'),
+                      onPressed: () => _web?.reload(),
+                    ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.open_in_browser_rounded),
+                      label: const Text('Open in your browser'),
+                      onPressed: _openOutside,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: _basket ? _basketBar(context) : null,
     );
+  }
+
+  /// The page in view in the system browser, for a shop whose bot check
+  /// will not pass in the app.
+  Future<void> _openOutside() async {
+    final url = await _web?.getUrl();
+    if (mounted) await openLink(context, '${url ?? _start}');
   }
 
   Widget _basketBar(BuildContext context) {

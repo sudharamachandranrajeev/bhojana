@@ -94,7 +94,7 @@ class ShopCheck implements Exception {
 
 /// True on a shop's bot-check or access-denied page.
 const checkScript = r'''
-(() => /security checks?|verify (that )?you are (a )?human|are you a robot|captcha|access denied|unusual traffic|pardon our interruption/i
+(() => /security checks?|verify(ing)? (that )?you are (a )?human|are you a robot|captcha|access denied|unusual traffic|pardon our interruption|just a moment|review the security of your connection/i
   .test(document.title + ' ' + (document.body ? document.body.innerText.slice(0, 2000) : '')))()
 ''';
 
