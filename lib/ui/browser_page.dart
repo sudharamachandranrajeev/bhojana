@@ -179,7 +179,7 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
           if (postcode.isNotEmpty)
             IconButton(
               tooltip: 'Copy postcode $postcode',
-              icon: const Icon(Icons.pin_drop_outlined),
+              icon: const Icon(Icons.pin_drop_rounded),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: postcode));
                 showMessage(context, 'Copied $postcode. Paste it where the shop asks for your postcode.');
@@ -188,15 +188,19 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
           if (shop.slots != null)
             IconButton(
               tooltip: 'Delivery slots',
-              icon: const Icon(Icons.local_shipping_outlined),
+              icon: const Icon(Icons.local_shipping_rounded),
               onPressed: () => _web?.loadUrl(urlRequest: URLRequest(url: WebUri(shop.slots!))),
             ),
           IconButton(
             tooltip: 'Keep a price from this page',
-            icon: const Icon(Icons.sell_outlined),
+            icon: const Icon(Icons.sell_rounded),
             onPressed: _readPrices,
           ),
-          IconButton(tooltip: 'Reload', icon: const Icon(Icons.refresh), onPressed: () => _web?.reload()),
+          IconButton(
+            tooltip: 'Reload',
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => _web?.reload(),
+          ),
         ],
         bottom: _progress < 1
             ? PreferredSize(
@@ -282,7 +286,7 @@ class _BrowserPageState extends ConsumerState<BrowserPage> {
                   OutlinedButton(onPressed: () => setState(() => _stop = true), child: const Text('Stop'))
                 else
                   FilledButton.icon(
-                    icon: const Icon(Icons.add_shopping_cart),
+                    icon: const Icon(Icons.add_shopping_cart_rounded),
                     label: Text(_done.isEmpty ? 'Add all' : 'Again'),
                     onPressed: shop.searchable ? _fill : null,
                   ),

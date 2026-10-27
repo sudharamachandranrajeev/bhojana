@@ -7,11 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/pricing.dart';
 import '../app/providers.dart';
 import '../db/database.dart';
+import '../domain/aisles.dart';
 import '../domain/book.dart';
 import '../domain/shops.dart';
 import 'browser_page.dart';
+import 'charts.dart';
 import 'common.dart';
 import 'compare_page.dart';
+import 'item_page.dart';
 import 'look.dart';
 
 class ListPage extends ConsumerWidget {
@@ -30,12 +33,12 @@ class ListPage extends ConsumerWidget {
           lists,
           builder: (all) => all.isEmpty
               ? EmptyState(
-                  icon: Icons.shopping_basket_outlined,
+                  icon: Icons.shopping_basket_rounded,
                   title: 'Start a shopping list',
                   message: 'Add what you need, then compare it across shops.',
                   actions: [
                     FilledButton.icon(
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(Icons.add_rounded),
                       label: const Text('New list'),
                       onPressed: () => _newList(context, ref, suggested: 'Weekly shop'),
                     ),
@@ -73,7 +76,7 @@ class _ListMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => PopupMenuButton<String>(
     tooltip: 'Lists',
-    icon: const Icon(Icons.list_alt),
+    icon: const Icon(Icons.list_alt_rounded),
     onSelected: (v) async {
       switch (v) {
         case 'new':
@@ -159,12 +162,12 @@ class _ItemsState extends ConsumerState<_Items> {
             decoration: InputDecoration(
               labelText: 'Add an item',
               hintText: '2 milk, bread, washing-up liquid',
-              suffixIcon: IconButton(tooltip: 'Add', icon: const Icon(Icons.add), onPressed: _submit),
+              suffixIcon: IconButton(tooltip: 'Add', icon: const Icon(Icons.add_rounded), onPressed: _submit),
             ),
           ),
         ),
         if (items.isEmpty)
-          const EmptyState(icon: Icons.edit_note, title: 'Nothing on this list yet')
+          const EmptyState(icon: Icons.edit_note_rounded, title: 'Nothing on this list yet')
         else
           SectionCard(
             title: '${left.length} to buy',
@@ -256,18 +259,7 @@ class _Overview extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, box) {
-              final across = box.maxWidth >= 640 ? 4 : 2;
-              const gap = 12.0;
-              final width = (box.maxWidth - gap * (across - 1)) / across;
-              return Wrap(
-                spacing: gap,
-                runSpacing: gap,
-                children: [for (final t in tiles) SizedBox(width: width, child: t)],
-              );
-            },
-          ),
+          TileGrid(minWidth: 160, children: tiles),
         ],
       ),
     );
@@ -287,8 +279,19 @@ class _ItemRow extends ConsumerWidget {
         (m) => m.entries.where((e) => e.key.$1 == item.id && e.value == Lookup.searching).length,
       ),
     );
+    final (icon, tone) = aisleLook(aisleOf(item.name));
     return ListTile(
-      leading: Checkbox(value: done, onChanged: (v) => ref.mutate((s) => s.book.tick(item, v ?? false))),
+      onTap: () => openItem(context, item.id),
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Checkbox(value: done, onChanged: (v) => ref.mutate((s) => s.book.tick(item, v ?? false))),
+          Opacity(
+            opacity: done ? 0.45 : 1,
+            child: ClayIcon(icon, tone: tone, size: 40),
+          ),
+        ],
+      ),
       title: Text(
         '${item.qty > 1 ? '${item.qty} × ' : ''}${item.name}',
         style: done ? TextStyle(decoration: TextDecoration.lineThrough, color: muted(context)) : null,
@@ -312,7 +315,7 @@ class _ItemRow extends ConsumerWidget {
               ].join(' · '),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: tomato),
+              style: TextStyle(color: priceInk(context)),
             ),
       trailing: PopupMenuButton<String>(
         tooltip: 'Item',
@@ -322,7 +325,7 @@ class _ItemRow extends ConsumerWidget {
               await Navigator.of(context)
                   .push(MaterialPageRoute<void>(builder: (_) => ComparePage(item: item)));
             case 'edit':
-              await _editItem(context, ref, item);
+              await editItem(context, ref, item);
             case 'delete':
               await ref.mutate((s) => s.book.removeItem(item.id));
           }
@@ -335,30 +338,6 @@ class _ItemRow extends ConsumerWidget {
       ),
     );
   }
-}
-
-Future<void> _editItem(BuildContext context, WidgetRef ref, Item item) async {
-  final name = TextEditingController(text: item.name);
-  final qty = TextEditingController(text: '${item.qty}');
-  final note = TextEditingController(text: item.note);
-  await showFormDialog(
-    context,
-    title: 'Edit item',
-    fields: (_) => [
-      Field(name, 'Name', autofocus: true),
-      Field(qty, 'How many', number: true),
-      Field(note, 'Note', hint: 'Brand, size, "only if on offer"'),
-    ],
-    onSave: () async {
-      final n = numberIn(qty)?.round() ?? 0;
-      if (name.text.trim().isEmpty) return 'Give the item a name.';
-      if (n < 1) return 'How many must be 1 or more.';
-      await ref.mutate(
-        (s) => s.book.saveItem(item.copyWith(name: name.text.trim(), qty: n, note: note.text.trim())),
-      );
-      return null;
-    },
-  );
 }
 
 /// Multi-buy deals found for the list. Bhojana compares single prices until
@@ -402,7 +381,7 @@ class _Deals extends ConsumerWidget {
                     'Multi-buy deal: ${o.deal.text} (${pounds(o.deal.each)} each). For your '
                     '${o.item.qty}, buy ${o.deal.units(o.item.qty)} for ${pounds(o.deal.cost(o.item.qty))}'
                     ' instead of ${pounds(o.price.pence * o.item.qty)}.',
-                    style: const TextStyle(color: tomato),
+                    style: TextStyle(color: priceInk(context)),
                   ),
                   const SizedBox(height: 6),
                   SegmentedButton<bool>(
@@ -470,7 +449,10 @@ class _Costs extends ConsumerWidget {
                     TextSpan(text: 'Cheapest at ${shopName(verdict.best)}: ', style: text.titleMedium),
                     TextSpan(
                       text: pounds(verdict.pence),
-                      style: text.titleMedium?.copyWith(color: tomato, fontWeight: FontWeight.w700),
+                      style: text.titleMedium?.copyWith(
+                        color: priceInk(context),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     TextSpan(
                       text: [
@@ -517,7 +499,7 @@ class _Costs extends ConsumerWidget {
             if (checks.contains(shop.id))
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.gpp_maybe_outlined),
+                leading: const Icon(Icons.gpp_maybe_rounded),
                 title: Text('${shop.name} wants to check you are a person'),
                 subtitle: const Text('Open it, answer the check, then Check prices again.'),
                 trailing: TextButton(
@@ -525,15 +507,20 @@ class _Costs extends ConsumerWidget {
                   child: Text('Open ${shop.name}'),
                 ),
               ),
-          for (final c in costs)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(shopName(c.shop)),
-              subtitle: Text(c.complete ? 'Every item priced' : '${c.priced} of ${c.items} items priced'),
-              trailing: Text(
-                pounds(c.pence),
-                style: text.titleMedium?.copyWith(color: c.shop == verdict?.best ? tomato : null),
-              ),
+          if (costs.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: BarRows([
+                for (final c in costs)
+                  BarRow(
+                    label: shopName(c.shop),
+                    caption: c.complete ? 'Every item priced' : '${c.priced} of ${c.items} items priced',
+                    figure: pounds(c.pence),
+                    value: c.pence,
+                    tone: shopTone(c.shop),
+                    stress: c.shop == verdict?.best,
+                  ),
+              ]),
             ),
           Wrap(
             spacing: 8,
@@ -541,13 +528,14 @@ class _Costs extends ConsumerWidget {
             children: [
               if (available)
                 OutlinedButton.icon(
-                  icon: const Icon(Icons.travel_explore),
+                  icon: const Icon(Icons.travel_explore_rounded),
                   label: const Text('Check prices'),
                   onPressed: searching > 0 ? null : () => ref.read(pricerProvider.notifier).price(left, mine),
                 ),
               if (fillable.isNotEmpty)
                 FilledButton.icon(
-                  icon: const Icon(Icons.shopping_cart_checkout),
+                  style: coralButton(context),
+                  icon: const Icon(Icons.shopping_cart_checkout_rounded),
                   label: const Text('Fill a basket'),
                   onPressed: () async {
                     final shop = await _pickShop(context, fillable, costs, verdict?.best);
