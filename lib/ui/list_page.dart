@@ -133,10 +133,14 @@ class _ItemsState extends ConsumerState<_Items> {
   }
 
   Future<void> _submit() async {
-    final list = ref.read(currentListProvider).value;
     final text = _add.text.trim();
-    if (list == null || text.isEmpty) return;
     _add.clear();
+    await _addText(text);
+  }
+
+  Future<void> _addText(String text) async {
+    final list = ref.read(currentListProvider).value;
+    if (list == null || text.isEmpty) return;
     final id = await ref.mutate((s) => s.book.addItem(list.id, text, today: today()));
     // Price it at every compared shop straight away.
     final item = (await ref.read(sessionProvider).book.items(list.id)).where((i) => i.id == id);
@@ -149,6 +153,8 @@ class _ItemsState extends ConsumerState<_Items> {
     final items = ref.watch(itemsProvider).value ?? const <Item>[];
     final prices = ref.watch(pricesProvider).value ?? const <Price>[];
     final left = items.where((i) => !i.done).toList();
+    final grouped = ref.watch(groupedProvider).value ?? false;
+    final usual = ref.watch(usualProvider).value ?? const <String>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -166,13 +172,48 @@ class _ItemsState extends ConsumerState<_Items> {
             ),
           ),
         ),
+        if (usual.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  'Add again',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: muted(context)),
+                ),
+                for (final n in usual)
+                  ActionChip(
+                    avatar: const Icon(Icons.add_rounded, size: 18),
+                    label: Text(n),
+                    onPressed: () => _addText(n),
+                  ),
+              ],
+            ),
+          ),
         if (items.isEmpty)
           const EmptyState(icon: Icons.edit_note_rounded, title: 'Nothing on this list yet')
         else
           SectionCard(
             title: '${left.length} to buy',
             padding: const EdgeInsets.only(bottom: 8),
-            child: Column(children: [for (final i in items) _ItemRow(i, bestPrice(i.id, prices))]),
+            trailing: IconButton(
+              tooltip: grouped ? 'Show in the order added' : 'Group by aisle',
+              isSelected: grouped,
+              icon: const Icon(Icons.view_agenda_outlined),
+              selectedIcon: const Icon(Icons.view_agenda_rounded),
+              onPressed: () => ref.mutate((s) => s.book.setPref(groupPref, grouped ? '0' : '1')),
+            ),
+            child: Column(
+              children: [
+                if (grouped)
+                  ..._byAisle(items, prices)
+                else
+                  for (final i in items) _ItemRow(i, bestPrice(i.id, prices)),
+              ],
+            ),
           ),
         _Drops(left, prices),
         if (left.isNotEmpty) _Deals(left, prices),
@@ -261,6 +302,45 @@ class _Overview extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           TileGrid(minWidth: 160, children: tiles),
+        ],
+      ),
+    );
+  }
+}
+
+/// The items under a header for each aisle, in the order a shop is walked.
+List<Widget> _byAisle(List<Item> items, List<Price> prices) {
+  final out = <Widget>[];
+  for (final aisle in walkOrder) {
+    final here = items.where((i) => aisleOf(i.name) == aisle).toList();
+    if (here.isEmpty) continue;
+    out.add(_AisleHeader(aisle, here.where((i) => !i.done).length));
+    for (final i in here) {
+      out.add(_ItemRow(i, bestPrice(i.id, prices)));
+    }
+  }
+  return out;
+}
+
+/// An aisle's name and how many of its items are left, above them.
+class _AisleHeader extends StatelessWidget {
+  const _AisleHeader(this.aisle, this.left);
+  final Aisle aisle;
+  final int left;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, tone) = aisleLook(aisle);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: tone.$2),
+          const SizedBox(width: 8),
+          Text(aisle.label, style: Theme.of(context).textTheme.titleSmall),
+          const Spacer(),
+          if (left > 0)
+            Text('$left left', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted(context))),
         ],
       ),
     );

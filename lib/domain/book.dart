@@ -159,6 +159,25 @@ class ShoppingBook {
   Future<void> chooseDeal(String key, bool take) async =>
       setPref(dealsPref, jsonEncode({...await dealChoices(), key: take}));
 
+  // ---- re-adding ----
+
+  /// Names the user has bought before and has not on [onList]: the latest
+  /// first, each once, including items since deleted from other lists.
+  Future<List<String>> usualItems(Set<String> onList, {int limit = 8}) async {
+    final rows =
+        await (db.select(db.foodItems)
+              ..orderBy([(t) => OrderingTerm.desc(t.added), (t) => OrderingTerm.desc(t.ord)])
+              ..limit(200))
+            .get();
+    final seen = {...onList.map((n) => n.toLowerCase())};
+    final out = <String>[];
+    for (final r in rows) {
+      if (seen.add(r.name.toLowerCase())) out.add(r.name);
+      if (out.length == limit) break;
+    }
+    return out;
+  }
+
   // ---- price watch ----
 
   /// The items whose price the user watches, by id.

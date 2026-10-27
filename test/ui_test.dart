@@ -190,6 +190,27 @@ void main() {
     await app.close();
   });
 
+  testWidgets('the list can be grouped by aisle, and bought items added again', (tester) async {
+    final app = AppHarness(tester)..phone();
+    await app.open(seed: seedBook);
+    await app.run();
+    expect(find.text('Fruit & veg'), findsNothing);
+    await app.tap(find.byTooltip('Group by aisle'));
+    for (final aisle in ['Fruit & veg', 'Bakery', 'Dairy & eggs', 'Household']) {
+      expect(find.text(aisle), findsOneWidget, reason: aisle);
+    }
+    await app.tap(find.byTooltip('Show in the order added'));
+    expect(find.text('Fruit & veg'), findsNothing);
+
+    await app.tap(find.byTooltip('Item').first);
+    await app.tapText('Delete');
+    expect(find.text('Add again'), findsOneWidget);
+    await app.tap(find.widgetWithText(ActionChip, 'semi-skimmed milk'));
+    expect(find.text('Add again'), findsNothing);
+    expect(find.text('semi-skimmed milk'), findsOneWidget);
+    await app.close();
+  });
+
   testWidgets('the postcode is checked and kept', (tester) async {
     final app = AppHarness(tester)..phone();
     await app.open();
