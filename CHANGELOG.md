@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
 
 - Running total and budget: the list shows what is in the basket and what the whole list comes to at
   each item's best price. Set a budget for a list to see the basket fill against it, what is left to
