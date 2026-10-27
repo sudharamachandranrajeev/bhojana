@@ -51,13 +51,15 @@ class ItemPage extends ConsumerWidget {
       byDay[p.day] = p.pence;
     }
     final days = [for (final d in byDay.keys.toList()..sort()) (d, byDay[d]!)];
+    final watched = ref.watch(watchedProvider).value ?? const <String>{};
+    final drop = priceDrops([item], kept, watched).firstOrNull;
     final narrow = MediaQuery.sizeOf(context).width < 640;
     StatTile tile((Color, Color) tone, IconData icon, String value, String label) =>
         StatTile(tone: tone, icon: icon, value: value, label: label, compact: narrow);
     return PageScaffold(
       title: item.name,
       children: [
-        _Hero(item),
+        _Hero(item, watched: watched.contains(item.id)),
         TileGrid(
           minWidth: 160,
           children: [
@@ -103,12 +105,26 @@ class ItemPage extends ConsumerWidget {
         ),
         SectionCard(
           title: 'Price history',
-          child: days.length < 2
-              ? Text(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (drop != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    dropText(drop),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(color: priceInk(context)),
+                  ),
+                ),
+              if (days.length < 2)
+                Text(
                   'Bhojana keeps the price each day it looks. The trend shows from the second day.',
                   style: TextStyle(color: muted(context)),
                 )
-              : PriceTrend(days),
+              else
+                PriceTrend(days),
+            ],
+          ),
         ),
       ],
     );
@@ -118,8 +134,9 @@ class ItemPage extends ConsumerWidget {
 /// The item in its aisle's colours: name, note, how many, whether it is in
 /// the basket, and the ways to act on it.
 class _Hero extends ConsumerWidget {
-  const _Hero(this.item);
+  const _Hero(this.item, {required this.watched});
   final Item item;
+  final bool watched;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -194,6 +211,14 @@ class _Hero extends ConsumerWidget {
                 selected: item.done,
                 onSelected: (v) => ref.mutate((s) => s.book.tick(item, v)),
               ),
+              FilterChip(
+                avatar: Icon(watched ? Icons.notifications_active_rounded : Icons.notifications_none_rounded),
+                showCheckmark: false,
+                label: Text(watched ? 'Watching the price' : 'Watch the price'),
+                tooltip: 'Show on the list when its best price falls',
+                selected: watched,
+                onSelected: (v) => ref.mutate((s) => s.book.watch(item.id, v)),
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -256,6 +281,11 @@ class _PriceMenu extends ConsumerWidget {
     ],
   );
 }
+
+/// "£1.39 at Aldi, down 10p from £1.49 on 18 Oct".
+String dropText(PriceDrop d) =>
+    '${pounds(d.now.pence)} at ${shopName(d.now.shop)}, down ${pounds(d.was.pence - d.now.pence)} '
+    'from ${pounds(d.was.pence)} on ${DateFormat('d MMM').format(DateTime.parse(d.was.day))}';
 
 Future<void> editItem(BuildContext context, WidgetRef ref, Item item) async {
   final name = TextEditingController(text: item.name);

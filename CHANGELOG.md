@@ -10,6 +10,8 @@
   basket, the price at each shop as bars, the best and lowest prices seen, and a chart of how the
   price has moved. Compare, edit or delete it from there.
 - Compare can add a search result straight to the list, with its price, and opens the new item.
+- Price drops: tap Watch the price on an item and, when its best price falls below the last day it was
+  priced, the list shows it ("£1.39 at Aldi, down 10p from £1.49 on 18 Oct") and so does the item.
 - Items are drawn with an icon for their aisle (fruit and veg, dairy, bakery, household and more),
   guessed from the name.
 - A fuller new look: the rounded Nunito typeface, rounded icons, a floating sage rail with a card to

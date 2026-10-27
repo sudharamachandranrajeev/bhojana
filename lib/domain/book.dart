@@ -158,7 +158,20 @@ class ShoppingBook {
 
   Future<void> chooseDeal(String key, bool take) async =>
       setPref(dealsPref, jsonEncode({...await dealChoices(), key: take}));
+
+  // ---- price watch ----
+
+  /// The items whose price the user watches, by id.
+  Future<Set<String>> watched() async => {...?(await pref(watchPref))?.split(',').where((s) => s.isNotEmpty)};
+
+  Future<void> watch(String itemId, bool on) async {
+    final ids = await watched();
+    await setPref(watchPref, (on ? (ids..add(itemId)) : (ids..remove(itemId))).join(','));
+  }
 }
+
+/// The synced pref holding [ShoppingBook.watched].
+const watchPref = 'bhojana.watch';
 
 /// The synced pref holding [ShoppingBook.dealChoices].
 const dealsPref = 'bhojana.deals';
@@ -314,6 +327,29 @@ Price? bestPrice(String itemId, List<Price> prices) {
     if (p.itemId == itemId && p.inStock && (best == null || p.pence < best.pence)) best = p;
   }
   return best;
+}
+
+/// A watched item that costs less than last time: its best price now and
+/// the best on the latest earlier day it was priced.
+typedef PriceDrop = ({Item item, Price now, Price was});
+
+/// The price drops among [items] watched in [watched], biggest first.
+List<PriceDrop> priceDrops(List<Item> items, List<Price> prices, Set<String> watched) {
+  final out = <PriceDrop>[];
+  for (final i in items) {
+    if (!watched.contains(i.id)) continue;
+    final now = bestPrice(i.id, prices);
+    if (now == null) continue;
+    Price? was;
+    for (final p in prices) {
+      if (p.itemId != i.id || !p.inStock || p.day.compareTo(now.day) >= 0) continue;
+      final c = was == null ? 1 : p.day.compareTo(was.day);
+      if (c > 0 || (c == 0 && p.pence < was!.pence)) was = p;
+    }
+    if (was != null && now.pence < was.pence) out.add((item: i, now: now, was: was));
+  }
+  out.sort((a, b) => (b.was.pence - b.now.pence).compareTo(a.was.pence - a.now.pence));
+  return out;
 }
 
 /// Pence as "£1.25" or "85p".

@@ -175,6 +175,21 @@ void main() {
     await app.close();
   });
 
+  testWidgets('a watched item shows on the list when its price falls', (tester) async {
+    final app = AppHarness(tester)..phone();
+    await app.open(seed: seedBook);
+    await app.run();
+    expect(find.text('A price drop'), findsNothing);
+    await app.tapText('2 × semi-skimmed milk');
+    await app.tapText('Watch the price');
+    expect(find.text('Watching the price'), findsOneWidget);
+    expect(find.text('£1.39 at Aldi, down 10p from £1.49 on 18 Oct'), findsOneWidget);
+    await app.tap(find.byType(BackButton));
+    expect(find.text('A price drop'), findsOneWidget);
+    expect(find.text('£1.39 at Aldi, down 10p from £1.49 on 18 Oct'), findsOneWidget);
+    await app.close();
+  });
+
   testWidgets('the postcode is checked and kept', (tester) async {
     final app = AppHarness(tester)..phone();
     await app.open();

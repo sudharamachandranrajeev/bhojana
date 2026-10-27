@@ -174,6 +174,7 @@ class _ItemsState extends ConsumerState<_Items> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Column(children: [for (final i in items) _ItemRow(i, bestPrice(i.id, prices))]),
           ),
+        _Drops(left, prices),
         if (left.isNotEmpty) _Deals(left, prices),
         if (left.isNotEmpty) _Costs(left, prices),
       ],
@@ -334,6 +335,35 @@ class _ItemRow extends ConsumerWidget {
           PopupMenuItem(value: 'compare', child: Text('Compare prices')),
           PopupMenuItem(value: 'edit', child: Text('Edit')),
           PopupMenuItem(value: 'delete', child: Text('Delete')),
+        ],
+      ),
+    );
+  }
+}
+
+/// Watched items whose best price has fallen since they were last priced.
+class _Drops extends ConsumerWidget {
+  const _Drops(this.left, this.prices);
+  final List<Item> left;
+  final List<Price> prices;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final drops = priceDrops(left, prices, ref.watch(watchedProvider).value ?? const {});
+    if (drops.isEmpty) return const SizedBox.shrink();
+    return SectionCard(
+      title: drops.length == 1 ? 'A price drop' : '${drops.length} price drops',
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        children: [
+          for (final d in drops)
+            ListTile(
+              onTap: () => openItem(context, d.item.id),
+              leading: const ClayIcon(Icons.trending_down_rounded, tone: sage),
+              title: Text(d.item.name),
+              subtitle: Text(dropText(d), style: TextStyle(color: priceInk(context))),
+              trailing: const Icon(Icons.chevron_right_rounded),
+            ),
         ],
       ),
     );
