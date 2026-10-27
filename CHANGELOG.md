@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- A new look: warm cream and pastel clay cards with soft shadows, a sage-green rail and bar, and coral
+  for prices.
+- The list opens with a greeting and tiles for what is left to buy, what is in the basket, the shops
+  compared and the multi-buys found.
+
 ## 0.5.1
 
 - Windows: searching shops for list items no longer closes the app. A shop page calling the web view's

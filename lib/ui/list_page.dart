@@ -149,6 +149,7 @@ class _ItemsState extends ConsumerState<_Items> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _Overview(items, left, prices),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: TextField(
@@ -173,6 +174,102 @@ class _ItemsState extends ConsumerState<_Items> {
         if (left.isNotEmpty) _Deals(left, prices),
         if (left.isNotEmpty) _Costs(left, prices),
       ],
+    );
+  }
+}
+
+/// The top of the list: a greeting with how the shop is going, and tiles for
+/// what is left, what is in the basket, the shops compared and the deals.
+class _Overview extends ConsumerWidget {
+  const _Overview(this.items, this.left, this.prices);
+  final List<Item> items;
+  final List<Item> left;
+  final List<Price> prices;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mine = ref.watch(myShopsProvider).value ?? const <Shop>[];
+    final deals = ref.watch(dealsProvider).value ?? const <String, bool>{};
+    final offers = dealOffers(left, prices, deals, {for (final s in mine) s.id});
+    final hour = DateTime.now().hour;
+    final text = Theme.of(context).textTheme;
+    final dark = isDark(context);
+    // On a phone the list itself must stay near the top.
+    final narrow = MediaQuery.sizeOf(context).width < 640;
+    StatTile tile((Color, Color) tone, IconData icon, int value, String label) =>
+        StatTile(tone: tone, icon: icon, value: '$value', label: label, compact: narrow);
+    final tiles = [
+      tile(sage, Icons.checklist_rounded, left.length, 'To buy'),
+      tile(peach, Icons.shopping_basket_rounded, items.length - left.length, 'In basket'),
+      tile(butter, Icons.storefront_rounded, mine.length, 'Shops'),
+      tile(sky, Icons.local_offer_rounded, offers.length, 'Multi-buys'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: narrow
+                ? const EdgeInsets.fromLTRB(20, 16, 16, 16)
+                : const EdgeInsets.fromLTRB(24, 22, 20, 22),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [tileFill(context, peach), tileFill(context, butter)],
+              ),
+              boxShadow: clayShadow(context),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hour < 12
+                            ? 'Good morning'
+                            : hour < 18
+                            ? 'Good afternoon'
+                            : 'Good evening',
+                        style: text.headlineMedium?.copyWith(fontSize: narrow ? 22 : 26),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        items.isEmpty
+                            ? 'Add what you need and Bhojana finds the best price for each.'
+                            : left.isEmpty
+                            ? 'Everything is in the basket. Nicely done.'
+                            : 'Bhojana searches your shops for each item and costs the list.',
+                        style: (narrow ? text.bodyMedium : text.bodyLarge)?.copyWith(
+                          color: dark ? null : const Color(0xFF6E5442),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ClayIcon(Icons.shopping_basket_rounded, tone: sage, size: narrow ? 52 : 72),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, box) {
+              final across = box.maxWidth >= 640 ? 4 : 2;
+              const gap = 12.0;
+              final width = (box.maxWidth - gap * (across - 1)) / across;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [for (final t in tiles) SizedBox(width: width, child: t)],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
