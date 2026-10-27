@@ -1,3 +1,4 @@
+import 'package:bhojana/db/database.dart';
 import 'package:bhojana/domain/aisles.dart';
 import 'package:bhojana/domain/book.dart';
 import 'package:bhojana/domain/reader.dart';
@@ -5,6 +6,7 @@ import 'package:bhojana/domain/shops.dart';
 import 'package:brahma_core/brahma_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'seed.dart';
 import 'support.dart';
 
 void main() {
@@ -193,6 +195,28 @@ void main() {
     expect(await book.prices(), hasLength(3));
     await book.setPref('bhojana.postcode', 'BT74 7AA');
     expect(await book.pref('bhojana.postcode'), 'BT74 7AA');
+    await store.db.close();
+  });
+
+  test('a watched item whose best price fell since the last day priced is a price drop', () async {
+    final store = await Store.open(memoryDatabase());
+    final book = ShoppingBook(store);
+    await seedBook(book);
+    final list = await book.items((await book.db.select(book.db.foodLists).get()).single.id);
+    Item named(String n) => list.firstWhere((i) => i.name == n);
+    final milk = named('semi-skimmed milk'), bread = named('wholemeal bread');
+    expect(priceDrops(list, await book.prices(), await book.watched()), isEmpty);
+
+    await book.watch(milk.id, true);
+    await book.watch(bread.id, true);
+    final drops = priceDrops(list, await book.prices(), await book.watched());
+    // Milk was £1.49 at Aldi on the latest earlier day; bread has no earlier day.
+    expect(drops.map((d) => (d.item.id, d.now.pence, d.was.pence, d.was.day)), [
+      (milk.id, 139, 149, '2026-10-18'),
+    ]);
+
+    await book.watch(milk.id, false);
+    expect(await book.watched(), {bread.id});
     await store.db.close();
   });
 

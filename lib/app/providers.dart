@@ -90,6 +90,12 @@ final myShopsProvider = FutureProvider<List<Shop>>((ref) async {
   ];
 });
 
+/// The items whose price the user watches (ShoppingBook.watched).
+final watchedProvider = FutureProvider<Set<String>>((ref) {
+  ref.watch(revisionProvider);
+  return ref.watch(sessionProvider).book.watched();
+});
+
 /// The user's answers to multi-buy deals (ShoppingBook.dealChoices).
 final dealsProvider = FutureProvider<Map<String, bool>>((ref) {
   ref.watch(revisionProvider);
