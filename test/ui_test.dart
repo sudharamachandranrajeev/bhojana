@@ -241,9 +241,9 @@ void main() {
     await app.enter('Postcode', 'not a code');
     await app.tapText('Save');
     expect(find.text('That does not look like a UK postcode.'), findsOneWidget);
-    await app.enter('Postcode', 'bt74  7aa');
+    await app.enter('Postcode', 'sw1a  1aa');
     await app.tapText('Save');
-    expect(find.textContaining('BT74 7AA.'), findsOneWidget);
+    expect(find.textContaining('SW1A 1AA.'), findsOneWidget);
     await app.close();
   });
 }

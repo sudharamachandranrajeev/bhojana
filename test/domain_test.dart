@@ -193,8 +193,8 @@ void main() {
     await book.removeList(list);
     expect(await book.items(list), isEmpty);
     expect(await book.prices(), hasLength(3));
-    await book.setPref('bhojana.postcode', 'BT74 7AA');
-    expect(await book.pref('bhojana.postcode'), 'BT74 7AA');
+    await book.setPref('bhojana.postcode', 'SW1A 1AA');
+    expect(await book.pref('bhojana.postcode'), 'SW1A 1AA');
     await store.db.close();
   });
 

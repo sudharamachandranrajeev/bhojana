@@ -69,7 +69,7 @@ Future<void> _editPostcode(BuildContext context, WidgetRef ref, String current) 
   await showFormDialog(
     context,
     title: 'Your postcode',
-    fields: (_) => [Field(c, 'Postcode', autofocus: true, hint: 'BT74 7AA')],
+    fields: (_) => [Field(c, 'Postcode', autofocus: true, hint: 'SW1A 1AA')],
     onSave: () async {
       final p = c.text.trim().toUpperCase().replaceAll(RegExp(r'\s+'), ' ');
       if (p.isNotEmpty && !RegExp(r'^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$').hasMatch(p)) {

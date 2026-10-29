@@ -48,5 +48,4 @@ Future<void> seedBook(ShoppingBook book) async {
       id,
     );
   }
-  await book.setPref('bhojana.postcode', 'BT74 7AA');
 }
