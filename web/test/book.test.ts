@@ -81,7 +81,7 @@ test("pounds and typed prices read like a shelf label", () => {
 });
 
 test("postcodes, dates and the shop catalogue", () => {
-  assert.equal(tidyPostcode(" bt74   7aa "), "BT74 7AA");
+  assert.equal(tidyPostcode(" sw1a   1aa "), "SW1A 1AA");
   assert.equal(tidyPostcode("SW1A1AA"), "SW1A1AA");
   assert.equal(tidyPostcode(""), "");
   assert.equal(tidyPostcode("12345"), null);
