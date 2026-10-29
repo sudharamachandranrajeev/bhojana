@@ -100,7 +100,7 @@
   <form onsubmit={savePostcode}>
     <label for="postcode-field">Postcode</label>
     <!-- svelte-ignore a11y_autofocus -->
-    <input id="postcode-field" bind:value={draft} placeholder="BT74 7AA" autocomplete="postal-code" autofocus aria-describedby="postcode-error" />
+    <input id="postcode-field" bind:value={draft} placeholder="SW1A 1AA" autocomplete="postal-code" autofocus aria-describedby="postcode-error" />
     <p id="postcode-error" class="error" role="alert">{error}</p>
     <div class="buttons">
       <button type="button" class="text" onclick={() => (editing = false)}>Cancel</button>
