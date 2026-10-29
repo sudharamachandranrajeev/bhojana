@@ -39,16 +39,16 @@ stop reading until the next fix.
 - 💷 **Priced as you type** – each new item is looked up at every shop you starred. Bhojana keeps the
   best match at each, in the same pack size where it can.
 - 🏆 **Where to shop** – names the cheapest shop for the whole list and what it saves over the next one.
-- 💳 **Your own prices** – sign in to a shop inside Bhojana, and searches show your Clubcard, Nectar or
-  Lidl Plus prices and local stock. Bhojana never sees your password or card details.
-- 🏷️ **Multi-buys, your choice** – at Tesco, Asda and Iceland, deals like *Any 2 for £5* sit beside the
-  single price. You pick **Take deal** or **Single price**.
+- 💳 **Your own prices** – sign in to a shop inside Bhojana, and searches show your loyalty-card prices
+  and local stock. Bhojana never sees your password or card details.
+- 🏷️ **Multi-buys, your choice** – at the supermarkets that list them, deals like *Any 2 for £5* sit
+  beside the single price. You pick **Take deal** or **Single price**.
 - 🧺 **Fill a basket** – pick a shop and tap **Add all**. Bhojana adds each item to the shop's basket
   and lists anything it could not add. You check out yourself.
 - 📉 **Price watch and budget** – each item has a page with its price at each shop and its price
   history. **Watch the price** flags drops, and **Set a budget** keeps a running total.
-- 🛒 **22 shops** – Tesco, Sainsbury's, Asda, Morrisons, Ocado, Waitrose, Iceland, Co-op, Aldi, Lidl and
-  12 more high-street shops, from Boots to Primark.
+- 🛒 **22 shops** – the 10 big UK supermarkets and 12 high-street shops, from chemists and discount
+  stores to clothes and homeware.
 - 🌐 **On the web too** (optional) – open your lists in any browser, with a browser extension for live
   prices on a computer. ...and more.
 
@@ -80,8 +80,8 @@ the newest release, pick the file for your device:
 | --- | --- | --- |
 | 🤖 Android phone | `Bhojana-<version>-android.apk` | Android 7 and newer |
 | 🪟 Windows computer | `Bhojana-<version>-windows-x64-setup.exe` | Windows 10 and 11 |
-| 🐧 Linux computer | `Bhojana-<version>-linux-x64.tar.gz` | Ubuntu 24.04, Fedora, Arch and similar (Intel/AMD 64-bit) |
-| 🧩 Browser extension | `bhojana-extension-<version>.zip` | Chrome, Edge, Brave, Firefox 128+ (only with the web app) |
+| 🐧 Linux computer | `Bhojana-<version>-linux-x64.tar.gz` | Ubuntu 24.04, Fedora, Arch and similar (64-bit x86) |
+| 🧩 Browser extension | `bhojana-extension-<version>.zip` | Chrome, Edge and other Chromium browsers, Firefox 128+ (only with the web app) |
 
 Each release also has `SHA256SUMS.txt`, a list of fingerprints to check the files are genuine.
 
@@ -96,7 +96,7 @@ Each release also has `SHA256SUMS.txt`, a list of fingerprints to check the file
 
 1. Open the downloaded `.apk` on your phone.
 2. If Android asks, allow installs from your browser or file manager. This is normal for apps
-   from outside the Play Store.
+   from outside an app store.
 3. Tap **Install**, then **Open**.
 
 Newer versions install over the top and keep your data.
@@ -227,7 +227,7 @@ flutter run -d linux        # or windows, or an Android device
 
 flutter test                                              # reader_test uses headless Chromium if installed
 flutter test integration_test/live_app_test.dart -d linux # the whole flow against the real shops
-flutter test integration_test/live_shops_test.dart -d linux --dart-define=SHOPS=asda,iceland
+flutter test integration_test/live_shops_test.dart -d linux --dart-define=SHOPS=<shop-id>,<shop-id>
                                   # saves real shop pages to test/live_pages (not committed);
                                   # flutter test then replays the reader over them offline
 BHOJANA_SHOTS=/tmp/shots FLUTTER_ROOT=<flutter sdk> flutter test test/screenshots_test.dart
