@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1
+
+- Windows: the installer has its own id. Before, it shared one with other Brahma apps, so Windows could install it into another app's folder and replace its Start menu shortcut. Install this version to move it to its own folder; your data is not touched.
+
 ## 0.9.0
 
 - Running total and budget: the list shows what is in the basket and what the whole list comes to at

@@ -10,7 +10,8 @@
 #define Release "..\..\build\windows\x64\runner\Release"
 
 [Setup]
-AppId={{55825A17-B296-4ED6-A66E-84FB1F5A100C}
+; Own id: until now it wrongly shared Udyoga's, so Windows treated the apps as one.
+AppId={{2AEE7A28-EC87-4960-8ADE-7B8C22FB9C32}
 AppName=Bhojana
 AppVersion={#AppVersion}
 AppVerName=Bhojana {#AppVersion}
@@ -49,3 +50,32 @@ Name: "{autodesktop}\Bhojana"; Filename: "{app}\bhojana.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\bhojana.exe"; Description: "{cm:LaunchProgram,Bhojana}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+const
+  OldKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{55825A17-B296-4ED6-A66E-84FB1F5A100C}_is1';
+
+{ Older versions installed under an id shared with other Brahma apps, often
+  into another app's folder. Remove only what is Bhojana's: its old exe, and
+  the old uninstall entry when it still names this app (its uninstaller would
+  delete the whole shared folder). Other apps' files are left alone. }
+procedure RemoveOld(Root: Integer);
+var
+  Name, Dir: String;
+begin
+  if RegQueryStringValue(Root, OldKey, 'DisplayName', Name) and (Name = 'Bhojana') then
+  begin
+    if RegQueryStringValue(Root, OldKey, 'InstallLocation', Dir) then
+      DeleteFile(AddBackslash(Dir) + 'bhojana.exe');
+    RegDeleteKeyIncludingSubkeys(Root, OldKey);
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssInstall then
+  begin
+    RemoveOld(HKCU);
+    if IsAdminInstallMode then RemoveOld(HKLM);
+  end;
+end;
