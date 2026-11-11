@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/sudharamachandranrajeev/bhojana"><img src="branding/bhojana-512.png" alt="Bhojana" width="140"></a>
+  <a href="https://github.com/sudharamachandranrajeev/bhojana-grocery-shopping"><img src="branding/bhojana-512.png" alt="Bhojana" width="140"></a>
   <br>
   Bhojana
   <br>
@@ -9,10 +9,10 @@
 <h4 align="center">Your shopping list, priced at every UK shop you use, so you know where to shop and what you save.</h4>
 
 <p align="center">
-  <a href="https://github.com/sudharamachandranrajeev/bhojana/releases"><img src="https://img.shields.io/github/v/release/sudharamachandranrajeev/bhojana?include_prereleases&color=e07a5f&label=download" alt="Latest release"></a>
+  <a href="https://github.com/sudharamachandranrajeev/bhojana-grocery-shopping/releases"><img src="https://img.shields.io/github/v/release/sudharamachandranrajeev/bhojana-grocery-shopping?include_prereleases&color=e07a5f&label=download" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/works%20on-Linux%20%7C%20Windows%20%7C%20Android%20%7C%20web-555" alt="Works on Linux, Windows, Android and the web">
   <img src="https://img.shields.io/badge/your%20data-encrypted-2e7d32" alt="Your data is encrypted">
-  <a href="https://github.com/sudharamachandranrajeev/brahma"><img src="https://img.shields.io/badge/part%20of-Brahma-8a5cf6" alt="Part of Brahma"></a>
+  <a href="https://github.com/sudharamachandranrajeev/brahma-life-suite"><img src="https://img.shields.io/badge/part%20of-Brahma-8a5cf6" alt="Part of Brahma"></a>
 </p>
 
 <p align="center">
@@ -73,7 +73,7 @@ stop reading until the next fix.
 
 ### Step 1 – Download
 
-Open the [releases page](https://github.com/sudharamachandranrajeev/bhojana/releases) and, under
+Open the [releases page](https://github.com/sudharamachandranrajeev/bhojana-grocery-shopping/releases) and, under
 the newest release, pick the file for your device:
 
 | Your device | File to download | Works on |
@@ -142,7 +142,7 @@ remove it, run `./install.sh --uninstall`. Your data stays.
 
 ### Step 4 (optional) – Sync and the web app
 
-- **Sync between devices**: set up the free [Brahma sync server](https://github.com/sudharamachandranrajeev/brahma/tree/main/server)
+- **Sync between devices**: set up the free [Brahma sync server](https://github.com/sudharamachandranrajeev/brahma-life-suite/tree/main/server)
   at home or on Cloudflare. Then choose **Settings → Set up sync** and follow the steps. The same
   account works in every Brahma app.
 - **Use it in a browser**: the web app runs on Bhojana's own older server ([server/](server/README.md)),
@@ -207,7 +207,7 @@ Uninstalling on Android deletes it, so sync first if you want to keep your lists
 <details>
 <summary><b>Can I use Bhojana inside the Brahma app?</b></summary>
 
-Yes. [Brahma](https://github.com/sudharamachandranrajeev/brahma) includes Bhojana alongside the
+Yes. [Brahma](https://github.com/sudharamachandranrajeev/brahma-life-suite) includes Bhojana alongside the
 other family apps, with one sign-in for all of them.
 </details>
 
@@ -220,7 +220,7 @@ You need [Git](https://git-scm.com) and [Flutter](https://flutter.dev) 3.47. The
 and extension need Node.js 24 or newer.
 
 ```bash
-git clone https://github.com/sudharamachandranrajeev/bhojana
+git clone https://github.com/sudharamachandranrajeev/bhojana-grocery-shopping
 cd bhojana
 flutter pub get
 flutter run -d linux        # or windows, or an Android device
@@ -251,13 +251,13 @@ Bhojana is one app in the **Brahma** family. They share one sign-in and one sync
 
 | App | What it does |
 | --- | --- |
-| [brahma](https://github.com/sudharamachandranrajeev/brahma) | The shared core and the all-in-one app |
-| [artha](https://github.com/sudharamachandranrajeev/artha) | Money: accounts, spending, bills and investments |
-| [graha-anveshana](https://github.com/sudharamachandranrajeev/graha-anveshana) | Find a home to rent or buy |
-| [vahana-anveshana](https://github.com/sudharamachandranrajeev/vahana-anveshana) | Find a car |
-| [udyoga](https://github.com/sudharamachandranrajeev/udyoga) | Career and job hunting |
-| [vidya](https://github.com/sudharamachandranrajeev/vidya) | Learning, flashcards and focus |
-| [vani](https://github.com/sudharamachandranrajeev/vani) | Social media posts, inbox and alerts |
+| [brahma](https://github.com/sudharamachandranrajeev/brahma-life-suite) | The shared core and the all-in-one app |
+| [artha](https://github.com/sudharamachandranrajeev/artha-personal-finance) | Money: accounts, spending, bills and investments |
+| [graha-anveshana](https://github.com/sudharamachandranrajeev/graha-anveshana-property-search) | Find a home to rent or buy |
+| [vahana-anveshana](https://github.com/sudharamachandranrajeev/vahana-anveshana-car-manager) | Find a car |
+| [udyoga](https://github.com/sudharamachandranrajeev/udyoga-career-manager) | Career and job hunting |
+| [vidya](https://github.com/sudharamachandranrajeev/vidya-learning-manager) | Learning, flashcards and focus |
+| [vani](https://github.com/sudharamachandranrajeev/vani-social-media-manager) | Social media posts, inbox and alerts |
 
 ## License
 

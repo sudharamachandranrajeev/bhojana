@@ -8,7 +8,7 @@ const bhojanaIdentity = AppIdentity(
   id: 'bhojana',
   name: 'Bhojana',
   androidPackage: 'dev.brahma.bhojana',
-  releases: 'sudharamachandranrajeev/bhojana',
+  releases: 'sudharamachandranrajeev/bhojana-grocery-shopping',
 );
 
 /// Everything a running app needs: keys, the encrypted database and the
